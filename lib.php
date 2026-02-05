@@ -1,18 +1,42 @@
 <?php
-defined('MOODLE_INTERNAL') || die();
-
-
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Require that the current user has at least one of the given roles in any COURSE context.
+ * Library functions for local_mycoursesfilter.
  *
- * @param string[] $roleshortnames e.g. ['student']
+ * @package    local_mycoursesfilter
+ * @copyright  2026 Ralf Erlebach <moodle-dev@ralferlebach.de>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Require that the current user has at least one of the given roles in any course context.
+ *
+ * @param array $roleshortnames Array of role shortnames, e.g. ['student'].
+ * @return void
+ * @throws moodle_exception If the user does not have any of the required roles.
  */
 function local_mycoursesfilter_require_any_course_role(array $roleshortnames): void {
     global $DB, $USER;
 
+    // Admins are always allowed (optional behaviour).
     if (is_siteadmin($USER)) {
-        return; // Admins always allowed (optional).
+        return;
     }
 
     if (empty($roleshortnames)) {
@@ -26,19 +50,16 @@ function local_mycoursesfilter_require_any_course_role(array $roleshortnames): v
         'ctxlevel' => CONTEXT_COURSE,
     ]);
 
-    $sql = "
-        SELECT 1
-          FROM {role_assignments} ra
-          JOIN {context} ctx ON ctx.id = ra.contextid
-          JOIN {role} r ON r.id = ra.roleid
-         WHERE ra.userid = :userid
-           AND ctx.contextlevel = :ctxlevel
-           AND r.shortname $insql
-         LIMIT 1
-    ";
+    $sql = "SELECT 1
+              FROM {role_assignments} ra
+              JOIN {context} ctx ON ctx.id = ra.contextid
+              JOIN {role} r ON r.id = ra.roleid
+             WHERE ra.userid = :userid
+               AND ctx.contextlevel = :ctxlevel
+               AND r.shortname $insql";
 
     $ok = $DB->record_exists_sql($sql, $params);
     if (!$ok) {
-        print_error('nopermissions', 'error', '', 'role=student (course context)');
+        throw new moodle_exception('nopermissions', 'error', '', 'role=student (course context)');
     }
 }
