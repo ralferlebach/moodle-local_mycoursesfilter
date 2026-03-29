@@ -105,7 +105,7 @@ foreach ($courses as $course) {
     $filtered[] = $course;
 }
 
-usort($filtered, static function(stdClass $a, stdClass $b) use ($meta, $sort, $dir): int {
+usort($filtered, static function (stdClass $a, stdClass $b) use ($meta, $sort, $dir): int {
     $adata = $meta[$a->id] ?? [];
     $bdata = $meta[$b->id] ?? [];
 

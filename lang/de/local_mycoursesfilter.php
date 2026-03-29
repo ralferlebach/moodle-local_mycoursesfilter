@@ -22,7 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['pluginname'] = 'Meine Kurse – Filterlink';
 $string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
+$string['pluginname'] = 'Meine Kurse – Filterlink';
