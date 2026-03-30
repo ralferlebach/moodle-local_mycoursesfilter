@@ -30,6 +30,7 @@ namespace local_mycoursesfilter;
  *
  * @package    local_mycoursesfilter
  * @category   test
+ * @coversNothing
  * @copyright  2026 Ralf Erlebach <moodle-dev@ralferlebach.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -49,7 +50,6 @@ final class lib_test extends \advanced_testcase {
     /**
      * Tests matching the course name against fullname and shortname.
      *
-     * @covers ::local_mycoursesfilter_match_name
      * @return void
      */
     public function test_match_name_checks_fullname_and_shortname(): void {
@@ -67,7 +67,6 @@ final class lib_test extends \advanced_testcase {
     /**
      * Tests category matching.
      *
-     * @covers ::local_mycoursesfilter_match_category
      * @return void
      */
     public function test_match_category_checks_exact_category(): void {
@@ -83,7 +82,6 @@ final class lib_test extends \advanced_testcase {
     /**
      * Tests tag matching by tag name and id.
      *
-     * @covers ::local_mycoursesfilter_match_tag
      * @return void
      */
     public function test_match_tag_checks_name_and_id(): void {
@@ -107,7 +105,6 @@ final class lib_test extends \advanced_testcase {
     /**
      * Tests status matching when completion metadata is available.
      *
-     * @covers ::local_mycoursesfilter_match_status
      * @return void
      */
     public function test_match_status_uses_completion_metadata_when_available(): void {
@@ -147,7 +144,6 @@ final class lib_test extends \advanced_testcase {
     /**
      * Tests status matching fallback when completion metadata is unavailable.
      *
-     * @covers ::local_mycoursesfilter_match_status
      * @return void
      */
     public function test_match_status_falls_back_to_last_access(): void {

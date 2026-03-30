@@ -213,9 +213,9 @@ function local_mycoursesfilter_match_customfield(int $courseid, string $fieldsho
         $actualvalue = $data->export_value();
         if (is_array($actualvalue)) {
             $actualvalue = implode(', ', array_map('strval', $actualvalue));
-        } else if (is_bool($actualvalue)) {
+        } elseif (is_bool($actualvalue)) {
             $actualvalue = $actualvalue ? '1' : '0';
-        } else if ($actualvalue === null) {
+        } elseif ($actualvalue === null) {
             $actualvalue = '';
         } else {
             $actualvalue = (string)$actualvalue;
