@@ -80,12 +80,11 @@ $pageurl = new moodle_url('/local/mycoursesfilter/index.php', $pageparams);
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context(context_system::instance());
+$PAGE->add_body_classes(['limitedwidth', 'page-mycourses']);
 $PAGE->set_pagelayout('mycourses');
 $PAGE->set_pagetype('my-index');
 $PAGE->set_title(get_string('pagetitle', 'local_mycoursesfilter'));
 $PAGE->set_heading(get_string('pagetitle', 'local_mycoursesfilter'));
-$PAGE->add_body_class('limitedwidth');
-$PAGE->add_body_class('page-mycourses');
 $PAGE->requires->css(new moodle_url('/local/mycoursesfilter/styles.css'));
 
 $fields = 'id, fullname, shortname, category, visible, summary, summaryformat, idnumber';
@@ -170,7 +169,6 @@ $toolbarparams = [
 
 $templatecontext = [
     'pageheading' => get_string('pagetitle', 'local_mycoursesfilter'),
-    'pageheadingid' => 'local-mycoursesfilter-pageheading',
     'showbackbutton' => $returnurl !== '',
     'backurl' => $returnurl,
     'backlabel' => get_string('back'),
@@ -218,6 +216,9 @@ $templatecontext = [
         $toolbarparams
     ),
     'displayarialabel' => get_string('displayarialabel', 'local_mycoursesfilter'),
+    'currentview' => $view,
+    'currentfilter' => $filter,
+    'currentsort' => $sort,
 ];
 
 echo $OUTPUT->header();

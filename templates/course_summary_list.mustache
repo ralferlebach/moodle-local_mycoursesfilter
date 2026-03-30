@@ -1,31 +1,33 @@
 {{!
     @template local_mycoursesfilter/course_summary_list
 
-    Compact summary view of filtered courses.
+    Compact summary view aligned with Moodle's my/courses feel.
 }}
-<div class="local-mycoursesfilter-summary list-group">
+<div class="local-mycoursesfilter-summary list-group list-group-flush">
     {{#courses}}
-        <div class="list-group-item local-mycoursesfilter-course-summary-item">
-            <div class="d-flex align-items-start gap-3">
-                <div class="local-mycoursesfilter-media">
+        <div class="list-group-item local-mycoursesfilter-summaryitem px-0 py-2 border-left-0 border-right-0 border-start-0 border-end-0 rounded-0">
+            <div class="d-flex align-items-start local-mycoursesfilter-summaryrow">
+                <div class="local-mycoursesfilter-thumbwrap me-3 mr-3 mb-2 mb-md-0">
                     <a href="{{viewurl}}" class="d-block">
-                        <img class="courseimage rounded" src="{{courseimage}}" alt="{{fullname}}">
+                        <img class="local-mycoursesfilter-thumb rounded" src="{{courseimage}}" alt="{{fullname}}">
                     </a>
                 </div>
-                <div class="flex-grow-1 min-width-0">
-                    <div class="d-flex align-items-start justify-content-between gap-2">
-                        <div class="min-width-0">
-                            <h3 class="h6 mb-1"><a href="{{viewurl}}">{{{fullname}}}</a></h3>
+
+                <div class="flex-grow-1 local-mycoursesfilter-flexcontent">
+                    <div class="d-flex align-items-start justify-content-between local-mycoursesfilter-coursehead mb-1">
+                        <div class="local-mycoursesfilter-flexcontent">
+                            <h4 class="h6 mb-1 local-mycoursesfilter-coursetitle"><a href="{{viewurl}}">{{{fullname}}}</a></h4>
                             {{#showcoursecategory}}
-                                <div class="text-muted small mb-2 text-truncate">{{coursecategory}}</div>
+                                <div class="text-muted small local-mycoursesfilter-meta mb-1">{{coursecategory}}</div>
                             {{/showcoursecategory}}
                         </div>
                         {{#isfavourite}}
-                            <span class="badge bg-warning text-dark local-mycoursesfilter-badge">{{favouritelabel}}</span>
+                            <span class="badge badge-warning bg-warning text-dark text-nowrap">{{favouritelabel}}</span>
                         {{/isfavourite}}
                     </div>
+
                     {{#hassummary}}
-                        <div class="local-mycoursesfilter-summarytext local-mycoursesfilter-summarytext--expanded">{{{summaryhtml}}}</div>
+                        <div class="small text-muted local-mycoursesfilter-summarytext">{{{summaryhtml}}}</div>
                     {{/hassummary}}
                 </div>
             </div>
