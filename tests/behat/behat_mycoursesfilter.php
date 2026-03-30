@@ -33,7 +33,7 @@ require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
  * @copyright  2026 Ralf Erlebach <moodle-dev@ralferlebach.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class behat_local_mycoursesfilter extends behat_base {
+class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page.
      *
