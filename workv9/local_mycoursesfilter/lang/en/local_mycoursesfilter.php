@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['applyfilters'] = 'Apply';
 $string['courseoverview'] = 'Course overview';
-$string['displayarialabel'] = 'Dropdown menu for the display';
 $string['filteredcourses'] = 'Filtered courses: {$a}';
 $string['filter_all'] = 'All';
 $string['filter_completed'] = 'Completed';
@@ -31,17 +31,18 @@ $string['filter_favourites'] = 'Favourites';
 $string['filter_hidden'] = 'Removed from view';
 $string['filter_inprogress'] = 'In progress';
 $string['filter_notstarted'] = 'Not started';
-$string['groupingarialabel'] = 'Dropdown menu for the grouping';
+$string['filterlabel'] = 'Filter';
 $string['nocoursefound'] = 'No courses found.';
 $string['pagetitle'] = 'My courses (filtered)';
 $string['pluginname'] = 'My courses filter link';
+$string['resetfilters'] = 'Reset';
 $string['searchbyname'] = 'Search by course name';
-$string['sort_alpha'] = 'Sorted by course name';
-$string['sort_lastaccess'] = 'Sorted by last accessed';
-$string['sort_lastenrolled'] = 'Sorted by latest enrolment';
-$string['sort_shortname'] = 'Sorted by short name';
-$string['sortingarialabel'] = 'Dropdown menu for the sorting';
-$string['toolbararia'] = 'Course overview controls';
+$string['sort_alpha'] = 'Course title';
+$string['sort_lastaccess'] = 'Last accessed';
+$string['sort_lastenrolled'] = 'Latest enrolment';
+$string['sort_shortname'] = 'Short name';
+$string['sortlabel'] = 'Sorted by';
 $string['view_card'] = 'Card';
 $string['view_list'] = 'List';
-$string['view_summary'] = 'Description';
+$string['view_summary'] = 'List with description';
+$string['viewlabel'] = 'View';

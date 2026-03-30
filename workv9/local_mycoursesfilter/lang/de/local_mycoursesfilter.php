@@ -22,8 +22,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['applyfilters'] = 'Anwenden';
 $string['courseoverview'] = 'Kursübersicht';
-$string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
 $string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['filter_all'] = 'Alle';
 $string['filter_completed'] = 'Abgeschlossen';
@@ -31,17 +31,18 @@ $string['filter_favourites'] = 'Favoriten';
 $string['filter_hidden'] = 'Aus Ansicht entfernte';
 $string['filter_inprogress'] = 'In Bearbeitung';
 $string['filter_notstarted'] = 'Noch nicht begonnen';
-$string['groupingarialabel'] = 'Dropdown-Menü für die Gruppierung';
+$string['filterlabel'] = 'Filter';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
 $string['pluginname'] = 'Meine Kurse – Filterlink';
-$string['searchbyname'] = 'Kurse suchen';
-$string['sort_alpha'] = 'Sortiert nach Kursname';
-$string['sort_lastaccess'] = 'Sortiert nach letztem Zugriff';
-$string['sort_lastenrolled'] = 'Sortiert nach letzter Einschreibung';
-$string['sort_shortname'] = 'Sortiert nach Kurzname';
-$string['sortingarialabel'] = 'Dropdown-Menü für die Sortierung';
-$string['toolbararia'] = 'Steuerungen der Kursübersicht';
+$string['resetfilters'] = 'Zurücksetzen';
+$string['searchbyname'] = 'Suche nach Kursnamen';
+$string['sort_alpha'] = 'Kurstitel';
+$string['sort_lastaccess'] = 'Zuletzt aufgerufen';
+$string['sort_lastenrolled'] = 'Zuletzt eingeschrieben';
+$string['sort_shortname'] = 'Kurzname';
+$string['sortlabel'] = 'Sortiert nach';
 $string['view_card'] = 'Kachel';
 $string['view_list'] = 'Liste';
-$string['view_summary'] = 'Beschreibung';
+$string['view_summary'] = 'Liste mit Beschreibung';
+$string['viewlabel'] = 'Ansicht';

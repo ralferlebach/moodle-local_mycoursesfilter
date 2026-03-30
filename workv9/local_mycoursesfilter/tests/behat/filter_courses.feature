@@ -34,15 +34,3 @@ Feature: Filter the current user's course cards
     When I log in as "student1"
     And I am on the local my courses filter page with return URL "/my/courses.php"
     Then I should see "Back"
-
-  Scenario: Persist toolbar preferences between requests
-    When I log in as "student1"
-    And I am on the local my courses filter page with the following parameters:
-      | name   | value   |
-      | filter | hidden  |
-      | sort   | alpha   |
-      | view   | list    |
-    And I am on the local my courses filter page
-    Then I should see "No courses found."
-    And I should see "Sorted by course name"
-    And I should see "List"

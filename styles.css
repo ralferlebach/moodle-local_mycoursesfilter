@@ -1,0 +1,154 @@
+
+.local-mycoursesfilter-page {
+    max-width: 100%;
+}
+
+.local-mycoursesfilter .card-title,
+.local-mycoursesfilter h2,
+.local-mycoursesfilter h3 {
+    word-break: normal;
+    overflow-wrap: anywhere;
+}
+
+.local-mycoursesfilter-toolbar {
+    width: 100%;
+}
+
+.local-mycoursesfilter-toolbar-item--grouping,
+.local-mycoursesfilter-toolbar-item--sort,
+.local-mycoursesfilter-toolbar-item--display {
+    flex: 0 0 auto;
+}
+
+.local-mycoursesfilter-toolbar-item--grouping .btn,
+.local-mycoursesfilter-toolbar-item--sort .btn,
+.local-mycoursesfilter-toolbar-item--display .btn {
+    width: auto;
+    max-width: 100%;
+}
+
+.local-mycoursesfilter-toolbar .dropdown-menu {
+    max-width: min(100vw - 2rem, 24rem);
+}
+
+.local-mycoursesfilter-toolbar-item--search {
+    min-width: 16rem;
+}
+
+.local-mycoursesfilter-toolbar-item--search .simplesearchform,
+.local-mycoursesfilter-toolbar-item--search .searchbar {
+    width: 100%;
+}
+
+.local-mycoursesfilter-toolbar-item--search .searchbar {
+    max-width: 28rem;
+}
+
+.local-mycoursesfilter-toolbar-item--search .form-control {
+    min-width: 0;
+}
+
+.local-mycoursesfilter .container-fluid,
+.local-mycoursesfilter-overview,
+.local-mycoursesfilter-grid,
+.local-mycoursesfilter-list,
+.local-mycoursesfilter-summary {
+    overflow-x: hidden;
+}
+
+.local-mycoursesfilter-grid .card,
+.local-mycoursesfilter-grid .dashboard-card,
+.local-mycoursesfilter-grid .col {
+    min-width: 0;
+}
+
+.local-mycoursesfilter-grid .card,
+.local-mycoursesfilter-grid .dashboard-card {
+    width: 100%;
+}
+
+.local-mycoursesfilter-course-list-item,
+.local-mycoursesfilter-course-summary-item {
+    padding-top: .75rem;
+    padding-bottom: .75rem;
+}
+
+.local-mycoursesfilter-course-list-item .h6,
+.local-mycoursesfilter-course-summary-item .h6 {
+    font-size: 1rem;
+    margin-bottom: .25rem;
+}
+
+.local-mycoursesfilter-media {
+    flex: 0 0 96px;
+    width: 96px;
+    max-width: 96px;
+}
+
+.local-mycoursesfilter-media--compact {
+    flex-basis: 80px;
+    width: 80px;
+    max-width: 80px;
+}
+
+.local-mycoursesfilter-course-list-item .courseimage,
+.local-mycoursesfilter-course-summary-item .courseimage {
+    display: block;
+    width: 100%;
+    height: 60px;
+    object-fit: cover;
+}
+
+.local-mycoursesfilter-course-summary-item .courseimage {
+    height: 72px;
+}
+
+.local-mycoursesfilter-summarytext {
+    overflow-wrap: anywhere;
+}
+
+.local-mycoursesfilter-summarytext--compact {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.local-mycoursesfilter-summarytext--expanded {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: .875rem;
+}
+
+.local-mycoursesfilter-summarytext p:last-child {
+    margin-bottom: 0;
+}
+
+.local-mycoursesfilter-badge {
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .local-mycoursesfilter-toolbar-item--search {
+        min-width: 100%;
+        order: 10;
+    }
+
+    .local-mycoursesfilter-toolbar-item--search .searchbar {
+        max-width: none;
+    }
+
+    .local-mycoursesfilter-media,
+    .local-mycoursesfilter-media--compact {
+        flex-basis: 72px;
+        width: 72px;
+        max-width: 72px;
+    }
+
+    .local-mycoursesfilter-course-list-item .courseimage,
+    .local-mycoursesfilter-course-summary-item .courseimage {
+        height: 54px;
+    }
+}

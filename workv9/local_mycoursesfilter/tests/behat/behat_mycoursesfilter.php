@@ -24,9 +24,6 @@
  */
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
-require_once(__DIR__ . '/../../../../lib/behat/behat_forms.php');
-
-use Behat\Gherkin\Node\TableNode;
 
 /**
  * Behat steps for local_mycoursesfilter.
@@ -80,27 +77,6 @@ class behat_mycoursesfilter extends behat_base {
             'q' => $query,
             'returnurl' => $returnurl,
         ]);
-    }
-
-
-
-    /**
-     * Opens the local my courses filter page with arbitrary parameters.
-     *
-     * @When /^I am on the local my courses filter page with the following parameters:$/
-     * @param TableNode $table The parameter table.
-     * @return void
-     */
-    public function i_am_on_the_local_my_courses_filter_page_with_the_following_parameters(TableNode $table): void {
-        $params = [];
-        foreach ($table->getHash() as $row) {
-            if (!isset($row['name']) || !isset($row['value'])) {
-                throw new coding_exception('The parameter table must contain name and value columns.');
-            }
-            $params[$row['name']] = $row['value'];
-        }
-
-        $this->visit_filter_page($params);
     }
 
     /**

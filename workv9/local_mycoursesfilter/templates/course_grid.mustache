@@ -1,0 +1,12 @@
+{{!
+    @template local_mycoursesfilter/course_grid
+
+    Responsive card grid using Moodle's core course card partial.
+}}
+<div class="local-mycoursesfilter-grid row row-cols-1 row-cols-sm-2 row-cols-xl-3">
+    {{#courses}}
+        <div class="col d-flex mb-4">
+            {{> core_course/coursecard }}
+        </div>
+    {{/courses}}
+</div>

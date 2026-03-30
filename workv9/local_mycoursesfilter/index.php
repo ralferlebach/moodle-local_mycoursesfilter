@@ -34,29 +34,33 @@ $catid = optional_param('catid', 0, PARAM_INT);
 $field = optional_param('field', '', PARAM_ALPHANUMEXT);
 $fvalue = optional_param('value', '', PARAM_TEXT);
 $returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+
 $legacyfilter = optional_param('status', '', PARAM_ALPHA);
-
-$filterlabels = local_mycoursesfilter_get_filter_labels();
-$sortlabels = local_mycoursesfilter_get_sort_labels();
-$viewlabels = local_mycoursesfilter_get_view_labels();
-
-$filterallowed = array_keys($filterlabels);
-$sortallowed = array_keys($sortlabels);
-$dirallowed = ['asc', 'desc'];
-$viewallowed = array_keys($viewlabels);
-
-$filter = local_mycoursesfilter_resolve_toolbar_preference('filter', 'all', PARAM_ALPHA, $filterallowed);
-$sort = local_mycoursesfilter_resolve_toolbar_preference('sort', 'lastaccess', PARAM_ALPHA, $sortallowed);
-$dir = local_mycoursesfilter_resolve_toolbar_preference('dir', 'desc', PARAM_ALPHA, $dirallowed);
-$view = local_mycoursesfilter_resolve_toolbar_preference('view', 'card', PARAM_ALPHA, $viewallowed);
-
-if ($legacyfilter !== '' && !array_key_exists('filter', $_GET) && in_array($legacyfilter, $filterallowed, true)) {
-    $filter = $legacyfilter;
-    set_user_preference('local_mycoursesfilter_filter', $filter, $USER->id);
-}
+$filter = optional_param('filter', $legacyfilter !== '' ? $legacyfilter : 'all', PARAM_ALPHA);
+$sort = optional_param('sort', 'lastaccess', PARAM_ALPHA);
+$dir = optional_param('dir', 'desc', PARAM_ALPHA);
+$view = optional_param('view', 'card', PARAM_ALPHA);
 
 if ($filter === 'any') {
     $filter = 'all';
+}
+
+$filterallowed = ['all', 'notstarted', 'inprogress', 'completed', 'favourites', 'hidden'];
+$sortallowed = ['lastaccess', 'alpha', 'shortname', 'lastenrolled'];
+$dirallowed = ['asc', 'desc'];
+$viewallowed = ['card', 'list', 'summary'];
+
+if (!in_array($filter, $filterallowed, true)) {
+    $filter = 'all';
+}
+if (!in_array($sort, $sortallowed, true)) {
+    $sort = 'lastaccess';
+}
+if (!in_array($dir, $dirallowed, true)) {
+    $dir = 'desc';
+}
+if (!in_array($view, $viewallowed, true)) {
+    $view = 'card';
 }
 
 local_mycoursesfilter_require_any_course_role(['student']);
@@ -80,12 +84,8 @@ $pageurl = new moodle_url('/local/mycoursesfilter/index.php', $pageparams);
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context(context_system::instance());
-$PAGE->set_pagelayout('mycourses');
-$PAGE->set_pagetype('my-index');
 $PAGE->set_title(get_string('pagetitle', 'local_mycoursesfilter'));
 $PAGE->set_heading(get_string('pagetitle', 'local_mycoursesfilter'));
-$PAGE->add_body_class('limitedwidth');
-$PAGE->add_body_class('page-mycourses');
 $PAGE->requires->css(new moodle_url('/local/mycoursesfilter/styles.css'));
 
 $fields = 'id, fullname, shortname, category, visible, summary, summaryformat, idnumber';
@@ -155,69 +155,51 @@ if (!empty($filtered)) {
     }
 }
 
-$toolbarparams = [
-    'q' => $q,
-    'tag' => $tag,
-    'catid' => $catid,
-    'field' => $field,
-    'value' => $fvalue,
-    'filter' => $filter,
-    'sort' => $sort,
-    'dir' => $dir,
-    'view' => $view,
-    'returnurl' => $returnurl,
-];
-
 $templatecontext = [
-    'pageheading' => get_string('pagetitle', 'local_mycoursesfilter'),
-    'pageheadingid' => 'local-mycoursesfilter-pageheading',
     'showbackbutton' => $returnurl !== '',
     'backurl' => $returnurl,
     'backlabel' => get_string('back'),
     'sectiontitle' => get_string('courseoverview', 'local_mycoursesfilter'),
-    'toolbararialabel' => get_string('toolbararia', 'local_mycoursesfilter'),
+    'resultsheading' => get_string('filteredcourses', 'local_mycoursesfilter', count($filtered)),
     'hascourses' => !empty($filtered),
     'nocoursefound' => get_string('nocoursefound', 'local_mycoursesfilter'),
     'courseshtml' => $courseshtml,
-    'groupingbuttonlabel' => local_mycoursesfilter_get_active_toolbar_label($filterlabels, $filter, 'all'),
-    'groupingitems' => local_mycoursesfilter_build_dropdown_items(
-        $filterlabels,
-        'filter',
-        $filter,
-        $toolbarparams
-    ),
-    'groupingarialabel' => get_string('groupingarialabel', 'local_mycoursesfilter'),
-    'searchformurl' => (new moodle_url('/local/mycoursesfilter/index.php'))->out(false),
-    'searchhiddeninputs' => local_mycoursesfilter_build_hidden_inputs([
+    'filterlinks' => local_mycoursesfilter_build_filter_links([
+        'q' => $q,
         'tag' => $tag,
         'catid' => $catid,
         'field' => $field,
         'value' => $fvalue,
-        'filter' => $filter,
         'sort' => $sort,
         'dir' => $dir,
         'view' => $view,
         'returnurl' => $returnurl,
+    ], $filter),
+    'formurl' => (new moodle_url('/local/mycoursesfilter/index.php'))->out(false),
+    'hiddeninputs' => local_mycoursesfilter_build_hidden_inputs([
+        'tag' => $tag,
+        'catid' => $catid,
+        'field' => $field,
+        'value' => $fvalue,
+        'dir' => $dir,
+        'returnurl' => $returnurl,
     ]),
-    'searchinputlabel' => get_string('searchbyname', 'local_mycoursesfilter'),
-    'searchplaceholder' => get_string('search'),
     'searchquery' => $q,
-    'sortingbuttonlabel' => local_mycoursesfilter_get_active_toolbar_label($sortlabels, $sort, 'lastaccess'),
-    'sortingitems' => local_mycoursesfilter_build_dropdown_items(
-        $sortlabels,
-        'sort',
-        $sort,
-        $toolbarparams
-    ),
-    'sortingarialabel' => get_string('sortingarialabel', 'local_mycoursesfilter'),
-    'displaybuttonlabel' => local_mycoursesfilter_get_active_toolbar_label($viewlabels, $view, 'card'),
-    'displayitems' => local_mycoursesfilter_build_dropdown_items(
-        $viewlabels,
-        'view',
-        $view,
-        $toolbarparams
-    ),
-    'displayarialabel' => get_string('displayarialabel', 'local_mycoursesfilter'),
+    'searchlabel' => get_string('searchbyname', 'local_mycoursesfilter'),
+    'filterlabel' => get_string('filterlabel', 'local_mycoursesfilter'),
+    'sortlabel' => get_string('sortlabel', 'local_mycoursesfilter'),
+    'viewlabel' => get_string('viewlabel', 'local_mycoursesfilter'),
+    'submitlabel' => get_string('applyfilters', 'local_mycoursesfilter'),
+    'reseturl' => local_mycoursesfilter_build_reset_url([
+        'tag' => $tag,
+        'catid' => $catid,
+        'field' => $field,
+        'value' => $fvalue,
+        'returnurl' => $returnurl,
+    ])->out(false),
+    'resetlabel' => get_string('resetfilters', 'local_mycoursesfilter'),
+    'sortoptions' => local_mycoursesfilter_get_sort_options($sort),
+    'viewoptions' => local_mycoursesfilter_get_view_options($view),
 ];
 
 echo $OUTPUT->header();

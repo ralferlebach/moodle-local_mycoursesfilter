@@ -1,0 +1,41 @@
+{{!
+    @template local_mycoursesfilter/course_summary_list
+
+    Summary-rich card layout for filtered courses.
+}}
+<div class="local-mycoursesfilter-summary row row-cols-1 row-cols-lg-2">
+    {{#courses}}
+        <div class="col mb-4">
+            <div class="card h-100">
+                <div class="row no-gutters h-100">
+                    <div class="col-md-4">
+                        <a href="{{viewurl}}" class="d-block h-100">
+                            <img class="card-img h-100 local-mycoursesfilter-summaryimage" src="{{courseimage}}" alt="{{fullname}}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card-body d-flex flex-column h-100">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start mb-2">
+                                <div class="mr-2">
+                                    <h3 class="h5 card-title mb-1"><a href="{{viewurl}}">{{{fullname}}}</a></h3>
+                                    {{#showcoursecategory}}
+                                        <div class="text-muted small">{{coursecategory}}</div>
+                                    {{/showcoursecategory}}
+                                </div>
+                                {{#isfavourite}}
+                                    <span class="badge badge-warning">{{favouritelabel}}</span>
+                                {{/isfavourite}}
+                            </div>
+                            {{#hassummary}}
+                                <div class="card-text local-mycoursesfilter-summarytext">{{{summaryhtml}}}</div>
+                            {{/hassummary}}
+                            <div class="mt-auto pt-3">
+                                <a class="btn btn-link p-0" href="{{viewurl}}">{{{fullname}}}</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/courses}}
+</div>

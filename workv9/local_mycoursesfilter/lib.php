@@ -26,61 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/completionlib.php');
 
-
-/**
- * Resolves a persisted toolbar preference.
- *
- * Request parameters override stored preferences and are persisted immediately.
- *
- * @param string $name The request parameter and preference suffix.
- * @param string $default The default value.
- * @param int|string $paramtype The Moodle PARAM_* type.
- * @param string[] $allowed Allowed values.
- * @return string
- */
-function local_mycoursesfilter_resolve_toolbar_preference(
-    string $name,
-    string $default,
-    int|string $paramtype,
-    array $allowed
-): string {
-    global $USER;
-
-    $prefname = 'local_mycoursesfilter_' . $name;
-
-    if (array_key_exists($name, $_GET)) {
-        $value = optional_param($name, $default, $paramtype);
-    } else {
-        $value = get_user_preferences($prefname, $default, $USER->id);
-    }
-
-    if (!in_array($value, $allowed, true)) {
-        $value = $default;
-    }
-
-    if (array_key_exists($name, $_GET)) {
-        set_user_preference($prefname, $value, $USER->id);
-    }
-
-    return $value;
-}
-
-/**
- * Returns the available filter labels.
- *
- * @return array<string, string>
- */
-function local_mycoursesfilter_get_filter_labels(): array {
-    return [
-        'all' => get_string('filter_all', 'local_mycoursesfilter'),
-        'notstarted' => get_string('filter_notstarted', 'local_mycoursesfilter'),
-        'inprogress' => get_string('filter_inprogress', 'local_mycoursesfilter'),
-        'completed' => get_string('filter_completed', 'local_mycoursesfilter'),
-        'favourites' => get_string('filter_favourites', 'local_mycoursesfilter'),
-        'hidden' => get_string('filter_hidden', 'local_mycoursesfilter'),
-    ];
-}
-
 /**
  * Ensures that the current user has at least one of the supplied course roles.
  *
@@ -395,51 +340,35 @@ function local_mycoursesfilter_match_status(stdClass $course, ?array $meta, stri
 }
 
 /**
- * Builds dropdown item definitions for the toolbar.
+ * Builds the toolbar links for the filter pills.
  *
- * @param array<string, string> $options Menu options keyed by parameter value.
- * @param string $paramname Parameter name to write.
- * @param string $currentvalue Current selected value.
  * @param array<string, int|string> $baseparams The base URL parameters.
+ * @param string $currentfilter The active filter.
  * @return array<int, array<string, bool|string>>
  */
-function local_mycoursesfilter_build_dropdown_items(
-    array $options,
-    string $paramname,
-    string $currentvalue,
-    array $baseparams
-): array {
-    $items = [];
+function local_mycoursesfilter_build_filter_links(array $baseparams, string $currentfilter): array {
+    $filters = [
+        'all' => get_string('filter_all', 'local_mycoursesfilter'),
+        'notstarted' => get_string('filter_notstarted', 'local_mycoursesfilter'),
+        'inprogress' => get_string('filter_inprogress', 'local_mycoursesfilter'),
+        'completed' => get_string('filter_completed', 'local_mycoursesfilter'),
+        'favourites' => get_string('filter_favourites', 'local_mycoursesfilter'),
+        'hidden' => get_string('filter_hidden', 'local_mycoursesfilter'),
+    ];
 
-    foreach ($options as $value => $label) {
-        $params = $baseparams;
-        $params[$paramname] = $value;
-        $items[] = [
-            'label' => $label,
-            'url' => (new moodle_url('/local/mycoursesfilter/index.php', array_filter($params, static function ($item): bool {
-                return $item !== '' && $item !== 0;
+    $links = [];
+    foreach ($filters as $filter => $label) {
+        $params = $baseparams + ['filter' => $filter];
+        $links[] = [
+            'url' => (new moodle_url('/local/mycoursesfilter/index.php', array_filter($params, static function ($value): bool {
+                return $value !== '' && $value !== 0;
             })))->out(false),
-            'active' => $value === $currentvalue,
+            'label' => $label,
+            'active' => $filter === $currentfilter,
         ];
     }
 
-    return $items;
-}
-
-/**
- * Returns the currently active toolbar label.
- *
- * @param array<string, string> $options Available option labels.
- * @param string $currentvalue The selected value.
- * @param string $default Default value.
- * @return string
- */
-function local_mycoursesfilter_get_active_toolbar_label(array $options, string $currentvalue, string $default): string {
-    if (!empty($options[$currentvalue])) {
-        return $options[$currentvalue];
-    }
-
-    return $options[$default] ?? reset($options) ?: '';
+    return $links;
 }
 
 /**
@@ -486,30 +415,54 @@ function local_mycoursesfilter_build_reset_url(array $params): moodle_url {
 }
 
 /**
- * Returns the sort selector labels.
+ * Returns the sort selector options.
  *
- * @return array<string, string>
+ * @param string $currentsort The current sort key.
+ * @return array<int, array<string, bool|string>>
  */
-function local_mycoursesfilter_get_sort_labels(): array {
-    return [
+function local_mycoursesfilter_get_sort_options(string $currentsort): array {
+    $options = [
         'lastaccess' => get_string('sort_lastaccess', 'local_mycoursesfilter'),
         'alpha' => get_string('sort_alpha', 'local_mycoursesfilter'),
         'shortname' => get_string('sort_shortname', 'local_mycoursesfilter'),
         'lastenrolled' => get_string('sort_lastenrolled', 'local_mycoursesfilter'),
     ];
+
+    $result = [];
+    foreach ($options as $value => $label) {
+        $result[] = [
+            'value' => $value,
+            'label' => $label,
+            'selected' => $value === $currentsort,
+        ];
+    }
+
+    return $result;
 }
 
 /**
- * Returns the view selector labels.
+ * Returns the view selector options.
  *
- * @return array<string, string>
+ * @param string $currentview The current view key.
+ * @return array<int, array<string, bool|string>>
  */
-function local_mycoursesfilter_get_view_labels(): array {
-    return [
+function local_mycoursesfilter_get_view_options(string $currentview): array {
+    $options = [
         'card' => get_string('view_card', 'local_mycoursesfilter'),
         'list' => get_string('view_list', 'local_mycoursesfilter'),
         'summary' => get_string('view_summary', 'local_mycoursesfilter'),
     ];
+
+    $result = [];
+    foreach ($options as $value => $label) {
+        $result[] = [
+            'value' => $value,
+            'label' => $label,
+            'selected' => $value === $currentview,
+        ];
+    }
+
+    return $result;
 }
 
 /**
