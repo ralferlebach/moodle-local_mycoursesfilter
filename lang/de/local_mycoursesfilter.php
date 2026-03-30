@@ -23,6 +23,6 @@
  */
 
 $string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
-$string['pluginname'] = 'Meine Kurse – Filterlink';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
+$string['pluginname'] = 'Meine Kurse – Filterlink';
