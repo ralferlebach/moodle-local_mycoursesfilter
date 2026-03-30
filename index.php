@@ -24,7 +24,6 @@
 
 require_once(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/enrollib.php');
-require_once($CFG->dirroot . '/course/classes/external/course_summary_exporter.php');
 require_once(__DIR__ . '/lib.php');
 
 require_login();
@@ -132,24 +131,41 @@ usort($filtered, static function (stdClass $a, stdClass $b) use ($meta, $sort, $
     return -$comparison;
 });
 
-$renderer = $PAGE->get_renderer('core_course');
-$coursedata = [];
-foreach ($filtered as $course) {
-    $exporter = new course_summary_exporter($course, ['context' => context_course::instance($course->id)]);
-    $coursedata[] = $exporter->export($renderer);
-}
-
 echo $OUTPUT->header();
 
 echo $OUTPUT->single_button(new moodle_url($returnurl), get_string('back'), 'get');
-echo $OUTPUT->heading(get_string('filteredcourses', 'local_mycoursesfilter', count($coursedata)));
+echo $OUTPUT->heading(get_string('filteredcourses', 'local_mycoursesfilter', count($filtered)));
 
-if (empty($coursedata)) {
+if (empty($filtered)) {
     echo $OUTPUT->notification(get_string('nocoursefound', 'local_mycoursesfilter'), 'info');
 } else {
-    echo $OUTPUT->render_from_template('core_course/view-cards', [
-        'courses' => $coursedata,
-    ]);
+    echo html_writer::start_div('local-mycoursesfilter-results');
+    foreach ($filtered as $course) {
+        $context = context_course::instance((int)$course->id);
+        $coursename = format_string($course->fullname, true, ['context' => $context]);
+        $summary = '';
+        if (!empty($course->summary)) {
+            $summary = format_text(
+                $course->summary,
+                $course->summaryformat ?? FORMAT_HTML,
+                ['context' => $context, 'para' => false]
+            );
+        }
+
+        echo html_writer::start_div('card mb-3');
+        echo html_writer::start_div('card-body');
+        echo html_writer::tag(
+            'h3',
+            html_writer::link(new moodle_url('/course/view.php', ['id' => $course->id]), $coursename),
+            ['class' => 'h5 card-title']
+        );
+        if ($summary !== '') {
+            echo html_writer::div($summary, 'card-text');
+        }
+        echo html_writer::end_div();
+        echo html_writer::end_div();
+    }
+    echo html_writer::end_div();
 }
 
 echo $OUTPUT->footer();
