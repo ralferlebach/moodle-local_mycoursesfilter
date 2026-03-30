@@ -285,3 +285,89 @@ function local_mycoursesfilter_match_status(stdClass $course, ?array $meta, stri
 
     return true;
 }
+
+/**
+ * Exports the filtered courses as the context for the core course cards template.
+ *
+ * @param stdClass[] $courses The filtered courses.
+ * @return array<string, array<int, array<string, bool|string>>>
+ */
+function local_mycoursesfilter_export_course_cards_context(array $courses): array {
+    global $DB;
+
+    if (empty($courses)) {
+        return ['courses' => []];
+    }
+
+    $categoryids = [];
+    foreach ($courses as $course) {
+        $categoryid = (int)($course->category ?? 0);
+        if ($categoryid > 0) {
+            $categoryids[$categoryid] = $categoryid;
+        }
+    }
+
+    $categorynames = [];
+    if (!empty($categoryids)) {
+        [$insql, $params] = $DB->get_in_or_equal(array_values($categoryids), SQL_PARAMS_NAMED, 'cat');
+        $categorynames = $DB->get_records_select_menu('course_categories', "id {$insql}", $params, '', 'id, name');
+    }
+
+    $cards = [];
+    foreach ($courses as $course) {
+        $categoryid = (int)($course->category ?? 0);
+        $coursecontext = context_course::instance((int)$course->id);
+        $categoryname = '';
+
+        if (!empty($categorynames[$categoryid])) {
+            $categorycontext = context_coursecat::instance($categoryid);
+            $categoryname = format_string((string)$categorynames[$categoryid], true, ['context' => $categorycontext]);
+        }
+
+        $cards[] = [
+            'viewurl' => (new moodle_url('/course/view.php', ['id' => $course->id]))->out(false),
+            'courseimage' => local_mycoursesfilter_get_course_image_url($course),
+            'fullname' => format_string((string)$course->fullname, true, ['context' => $coursecontext]),
+            'isfavourite' => false,
+            'coursecategory' => $categoryname,
+            'showcoursecategory' => $categoryname !== '',
+            'visible' => !empty($course->visible),
+        ];
+    }
+
+    return ['courses' => $cards];
+}
+
+/**
+ * Returns a course card image URL.
+ *
+ * The function prefers a course overview image and falls back to Moodle's
+ * generated placeholder image when no overview image exists.
+ *
+ * @param stdClass $course The course record.
+ * @return string
+ */
+function local_mycoursesfilter_get_course_image_url(stdClass $course): string {
+    global $OUTPUT;
+
+    $context = context_course::instance((int)$course->id);
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'course', 'overviewfiles', 0, 'sortorder, filepath, filename', false);
+
+    foreach ($files as $file) {
+        if (!$file->is_valid_image()) {
+            continue;
+        }
+
+        return moodle_url::make_pluginfile_url(
+            $file->get_contextid(),
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename()
+        )->out(false);
+    }
+
+    return $OUTPUT->get_generated_image_for_id((int)$course->id);
+}

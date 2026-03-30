@@ -37,16 +37,56 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page.
      *
-     * @When /^I am on the local my courses filter page(?: with query "(?P<query_string>(?:[^"\\]|\\.)*)")?$/
+     * @When /^I am on the local my courses filter page(?: with query "(?P<query_string>(?:[^"\]|\.)*)")?$/
      * @param string|null $query The optional course search query.
      * @return void
      */
     public function i_am_on_the_local_my_courses_filter_page(?string $query = ''): void {
-        $path = '/local/mycoursesfilter/index.php';
+        $params = [];
         if ($query !== null && $query !== '') {
-            $path .= '?q=' . rawurlencode($query);
+            $params['q'] = $query;
         }
 
-        $this->getSession()->visit($this->locate_path($path));
+        $this->visit_filter_page($params);
+    }
+
+    /**
+     * Opens the local my courses filter page with a return URL.
+     *
+     * @When /^I am on the local my courses filter page with return URL "(?P<returnurl_string>(?:[^"\]|\.)*)"$/
+     * @param string $returnurl The return URL.
+     * @return void
+     */
+    public function i_am_on_the_local_my_courses_filter_page_with_return_url(string $returnurl): void {
+        $this->visit_filter_page(['returnurl' => $returnurl]);
+    }
+
+    /**
+     * Opens the local my courses filter page with query and return URL.
+     *
+     * @When /^I am on the local my courses filter page with query "(?P<query_string>(?:[^"\]|\.)*)" and return URL "(?P<returnurl_string>(?:[^"\]|\.)*)"$/
+     * @param string $query The course search query.
+     * @param string $returnurl The return URL.
+     * @return void
+     */
+    public function i_am_on_the_local_my_courses_filter_page_with_query_and_return_url(
+        string $query,
+        string $returnurl
+    ): void {
+        $this->visit_filter_page([
+            'q' => $query,
+            'returnurl' => $returnurl,
+        ]);
+    }
+
+    /**
+     * Visits the filter page with the supplied parameters.
+     *
+     * @param array<string, string> $params The URL parameters.
+     * @return void
+     */
+    protected function visit_filter_page(array $params): void {
+        $url = new moodle_url('/local/mycoursesfilter/index.php', $params);
+        $this->getSession()->visit($this->locate_path($url->out_as_local_url(false)));
     }
 }

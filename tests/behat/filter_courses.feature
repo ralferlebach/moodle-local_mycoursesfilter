@@ -29,3 +29,8 @@ Feature: Filter the current user's course cards
     Then I should see "No courses found."
     And I should not see "Biology 101"
     And I should not see "History 101"
+
+  Scenario: Show a back button when a return URL is provided
+    When I log in as "student1"
+    And I am on the local my courses filter page with return URL "/my/courses.php"
+    Then I should see "Back"

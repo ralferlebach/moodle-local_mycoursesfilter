@@ -18,8 +18,8 @@ The plugin exposes a dedicated page at `/local/mycoursesfilter/index.php` and al
   - course full name
   - course short name
   - latest enrolment time
-- Preserves a safe local return URL so the user can navigate back to the calling page.
-- Renders results using Moodle’s core course card renderer.
+- Uses Moodle's core mustache course cards template (`core_course/view-cards`) for the result list, so the output follows the same visual language as Moodle's course cards on pages such as `my/courses.php`.
+- Supports an optional safe local `returnurl` parameter. When it is present, the page renders a Back button to return to that page.
 
 ## Requirements
 
@@ -57,7 +57,7 @@ Base URL:
 | `status` | text | One of `any`, `notstarted`, `inprogress`, `completed`. |
 | `sort` | text | One of `lastaccess`, `alpha`, `shortname`, `lastenrolled`. |
 | `dir` | text | One of `asc`, `desc`. |
-| `returnurl` | local URL | Optional local URL for the back button. |
+| `returnurl` | local URL | Optional local URL for a Back button. The button is shown only when this parameter is present. |
 
 ### Example URLs
 
@@ -91,6 +91,12 @@ Filter by progress status:
 /local/mycoursesfilter/index.php?status=inprogress
 ```
 
+Filter by course name and provide a return target:
+
+```text
+/local/mycoursesfilter/index.php?q=biology&returnurl=%2Fmy%2Fcourses.php
+```
+
 ## Access model
 
 The page requires an authenticated user.
@@ -112,12 +118,20 @@ The plugin derives the status from Moodle course completion metadata and fallbac
 
 Because Moodle sites vary in their completion configuration, status matching is best understood as a practical UI filter based on available completion and access data.
 
+## Rendering approach
+
+The filtered result list is rendered with Moodle's shared course cards template:
+
+- `core_course/view-cards`
+
+The plugin prepares the template context in PHP and lets Moodle's mustache template render the final card deck. This keeps the visual output aligned with Moodle core course cards while still allowing the plugin to apply its own filters.
+
 ## Testing
 
-This plugin now includes automated tests:
+This plugin includes automated tests:
 
 - PHPUnit tests for the main filtering helper functions.
-- Behat acceptance tests for the course filtering page behaviour.
+- Behat acceptance tests for the course filtering page behaviour, including the optional return URL button.
 
 Typical local execution examples:
 
@@ -134,7 +148,7 @@ vendor/bin/behat --config /path/to/behat/behat.yml local/mycoursesfilter/tests/b
 ## Development notes
 
 - The plugin follows Moodle coding style and file boilerplate conventions.
-- The plugin relies on core renderers and core APIs for enrolments, course completion, tags, and custom fields.
+- The plugin relies on core APIs for enrolments, course completion, tags, custom fields, file storage, and mustache rendering.
 - The plugin stores no plugin-specific configuration or additional database tables.
 
 ## Limitations

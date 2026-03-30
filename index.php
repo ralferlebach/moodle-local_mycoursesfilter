@@ -33,6 +33,7 @@ $tag = optional_param('tag', '', PARAM_TEXT);
 $catid = optional_param('catid', 0, PARAM_INT);
 $field = optional_param('field', '', PARAM_ALPHANUMEXT);
 $fvalue = optional_param('value', '', PARAM_TEXT);
+$returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
 
 $status = optional_param('status', 'any', PARAM_ALPHA);
 $sort = optional_param('sort', 'lastaccess', PARAM_ALPHA);
@@ -54,12 +55,7 @@ if (!in_array($dir, $dirallowed, true)) {
 
 local_mycoursesfilter_require_any_course_role(['student']);
 
-$returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
-if (empty($returnurl)) {
-    $returnurl = get_local_referer(false) ?: (new moodle_url('/my/courses.php'))->out(false);
-}
-
-$pageurl = new moodle_url('/local/mycoursesfilter/index.php', [
+$pageparams = [
     'q' => $q,
     'tag' => $tag,
     'catid' => $catid,
@@ -68,8 +64,12 @@ $pageurl = new moodle_url('/local/mycoursesfilter/index.php', [
     'status' => $status,
     'sort' => $sort,
     'dir' => $dir,
-    'returnurl' => $returnurl,
-]);
+];
+if ($returnurl !== '') {
+    $pageparams['returnurl'] = $returnurl;
+}
+
+$pageurl = new moodle_url('/local/mycoursesfilter/index.php', $pageparams);
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context(context_system::instance());
@@ -131,41 +131,21 @@ usort($filtered, static function (stdClass $a, stdClass $b) use ($meta, $sort, $
     return -$comparison;
 });
 
-echo $OUTPUT->header();
+$templatecontext = [
+    'showbackbutton' => $returnurl !== '',
+    'backurl' => $returnurl,
+    'backlabel' => get_string('back'),
+    'heading' => get_string('filteredcourses', 'local_mycoursesfilter', count($filtered)),
+    'hascourses' => !empty($filtered),
+    'nocoursefound' => get_string('nocoursefound', 'local_mycoursesfilter'),
+    'cardshtml' => '',
+];
 
-echo $OUTPUT->single_button(new moodle_url($returnurl), get_string('back'), 'get');
-echo $OUTPUT->heading(get_string('filteredcourses', 'local_mycoursesfilter', count($filtered)));
-
-if (empty($filtered)) {
-    echo $OUTPUT->notification(get_string('nocoursefound', 'local_mycoursesfilter'), 'info');
-} else {
-    echo html_writer::start_div('local-mycoursesfilter-results');
-    foreach ($filtered as $course) {
-        $context = context_course::instance((int)$course->id);
-        $coursename = format_string($course->fullname, true, ['context' => $context]);
-        $summary = '';
-        if (!empty($course->summary)) {
-            $summary = format_text(
-                $course->summary,
-                $course->summaryformat ?? FORMAT_HTML,
-                ['context' => $context, 'para' => false]
-            );
-        }
-
-        echo html_writer::start_div('card mb-3');
-        echo html_writer::start_div('card-body');
-        echo html_writer::tag(
-            'h3',
-            html_writer::link(new moodle_url('/course/view.php', ['id' => $course->id]), $coursename),
-            ['class' => 'h5 card-title']
-        );
-        if ($summary !== '') {
-            echo html_writer::div($summary, 'card-text');
-        }
-        echo html_writer::end_div();
-        echo html_writer::end_div();
-    }
-    echo html_writer::end_div();
+if (!empty($filtered)) {
+    $cardscontext = local_mycoursesfilter_export_course_cards_context($filtered);
+    $templatecontext['cardshtml'] = $OUTPUT->render_from_template('core_course/view-cards', $cardscontext);
 }
 
+echo $OUTPUT->header();
+echo $OUTPUT->render_from_template('local_mycoursesfilter/page', $templatecontext);
 echo $OUTPUT->footer();
