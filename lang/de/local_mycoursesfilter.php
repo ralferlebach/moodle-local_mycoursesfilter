@@ -22,8 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 $string['allowtitleoverride'] = 'Titelüberschreibung per URL erlauben';
-$string['allowtitleoverride_desc'] = 'Erlaubt es, den konfigurierten Standardtitel über den URL-Parameter title zu überschreiben.';
+$string['allowtitleoverride_desc'] = 'Erlaubt es, den Standardtitel per URL-Parameter title zu überschreiben.';
 $string['categoryscope'] = 'Standardbereich für Kategorien';
 $string['categoryscope_desc'] = 'Legt fest, ob ausgewählte Kategorien standardmäßig alle Unterkategorien einschließen.';
 $string['categoryscope_only'] = 'Nur ausgewählte Kategorien';
@@ -32,13 +33,13 @@ $string['courseoverview'] = 'Kursübersicht';
 $string['defaulttitle'] = 'Standardtitel der Seite';
 $string['defaulttitle_desc'] = 'Optionaler Standardtitel für die gefilterte Seite. Leer lassen, um den Sprachstring zu verwenden.';
 $string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
-$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['filter_all'] = 'Alle';
 $string['filter_completed'] = 'Abgeschlossen';
 $string['filter_favourites'] = 'Favoriten';
 $string['filter_hidden'] = 'Aus Ansicht entfernte';
 $string['filter_inprogress'] = 'In Bearbeitung';
 $string['filter_notstarted'] = 'Noch nicht begonnen';
+$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['groupingarialabel'] = 'Dropdown-Menü für die Gruppierung';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';

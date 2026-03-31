@@ -144,32 +144,11 @@ function local_mycoursesfilter_get_local_referer_url(): string {
         return '';
     }
 
-    if (!empty($refererparts['host']) && !empty($siteparts['host'])) {
-        if (core_text::strtolower((string)$refererparts['host']) !== core_text::strtolower((string)$siteparts['host'])) {
-            return '';
-        }
-    }
-
-    if (!empty($refererparts['scheme']) && !empty($siteparts['scheme'])) {
-        if (core_text::strtolower((string)$refererparts['scheme']) !== core_text::strtolower((string)$siteparts['scheme'])) {
-            return '';
-        }
-    }
-
-    $refererport = (int)($refererparts['port'] ?? 0);
-    $siteport = (int)($siteparts['port'] ?? 0);
-    if ($refererport !== 0 && $siteport !== 0 && $refererport !== $siteport) {
+    if (!local_mycoursesfilter_is_same_site_url($refererparts, $siteparts)) {
         return '';
     }
 
-    $localurl = (string)($refererparts['path'] ?? '');
-    if (!empty($refererparts['query'])) {
-        $localurl .= '?' . $refererparts['query'];
-    }
-    if (!empty($refererparts['fragment'])) {
-        $localurl .= '#' . $refererparts['fragment'];
-    }
-
+    $localurl = local_mycoursesfilter_build_local_url_from_parts($refererparts);
     if ($localurl === '') {
         return '';
     }
@@ -180,6 +159,87 @@ function local_mycoursesfilter_get_local_referer_url(): string {
     }
 
     return $cleanurl;
+}
+
+/**
+ * Checks whether two parsed URLs belong to the same site.
+ *
+ * @param array $candidateparts Parsed candidate URL parts.
+ * @param array $siteparts Parsed site URL parts.
+ * @return bool
+ */
+function local_mycoursesfilter_is_same_site_url(array $candidateparts, array $siteparts): bool {
+    if (!empty($candidateparts['host']) && !empty($siteparts['host'])) {
+        if (core_text::strtolower((string)$candidateparts['host']) !== core_text::strtolower((string)$siteparts['host'])) {
+            return false;
+        }
+    }
+
+    if (!empty($candidateparts['scheme']) && !empty($siteparts['scheme'])) {
+        if (core_text::strtolower((string)$candidateparts['scheme']) !== core_text::strtolower((string)$siteparts['scheme'])) {
+            return false;
+        }
+    }
+
+    $candidateport = (int)($candidateparts['port'] ?? 0);
+    $siteport = (int)($siteparts['port'] ?? 0);
+
+    return ($candidateport === 0 || $siteport === 0 || $candidateport === $siteport);
+}
+
+/**
+ * Builds a local URL string from parsed URL parts.
+ *
+ * @param array $urlparts Parsed URL parts.
+ * @return string
+ */
+function local_mycoursesfilter_build_local_url_from_parts(array $urlparts): string {
+    $localurl = (string)($urlparts['path'] ?? '');
+    if (!empty($urlparts['query'])) {
+        $localurl .= '?' . $urlparts['query'];
+    }
+
+    if (!empty($urlparts['fragment'])) {
+        $localurl .= '#' . $urlparts['fragment'];
+    }
+
+    return $localurl;
+}
+
+/**
+ * Returns the Moodle base path from $CFG->wwwroot.
+ *
+ * @return string
+ */
+function local_mycoursesfilter_get_site_path(): string {
+    global $CFG;
+
+    $sitepath = (string)(parse_url($CFG->wwwroot, PHP_URL_PATH) ?? '');
+    if ($sitepath === '' || $sitepath === '/') {
+        return '';
+    }
+
+    return rtrim($sitepath, '/');
+}
+
+/**
+ * Removes the Moodle base path from a local URL path.
+ *
+ * @param string $path The local URL path.
+ * @return string
+ */
+function local_mycoursesfilter_strip_site_path(string $path): string {
+    $sitepath = local_mycoursesfilter_get_site_path();
+    if ($sitepath === '' || strpos($path, $sitepath) !== 0) {
+        return $path;
+    }
+
+    $strippedpath = substr($path, strlen($sitepath));
+    if ($strippedpath === false || $strippedpath === '') {
+        return '/';
+    }
+
+    return $strippedpath;
 }
 
 /**
@@ -200,9 +260,24 @@ function local_mycoursesfilter_resolve_return_url(string $rawreturnurl): string 
         return local_mycoursesfilter_get_local_referer_url();
     }
 
-    $cleanurl = clean_param($rawreturnurl, PARAM_LOCALURL);
-    if ($cleanurl === '' || $cleanurl !== $rawreturnurl) {
+    return local_mycoursesfilter_normalise_explicit_local_url($rawreturnurl);
+}
+
+/**
+ * Normalises an explicit local URL for this Moodle installation.
+ *
+ * @param string $rawurl Raw local URL.
+ * @return string
+ */
+function local_mycoursesfilter_normalise_explicit_local_url(string $rawurl): string {
+    $cleanurl = clean_param($rawurl, PARAM_LOCALURL);
+    if ($cleanurl === '' || $cleanurl !== $rawurl || strpos($cleanurl, '/') !== 0) {
         return '';
+    }
+
+    $sitepath = local_mycoursesfilter_get_site_path();
+    if ($sitepath !== '' && strpos($cleanurl, $sitepath . '/') !== 0 && $cleanurl !== $sitepath) {
+        return $sitepath . $cleanurl;
     }
 
     return $cleanurl;
@@ -225,7 +300,12 @@ function local_mycoursesfilter_resolve_source_course_id(int $explicitcourseid = 
     }
 
     $refererparts = parse_url($refererurl);
-    if ($refererparts === false || ($refererparts['path'] ?? '') !== '/course/view.php' || empty($refererparts['query'])) {
+    if ($refererparts === false || empty($refererparts['query'])) {
+        return 0;
+    }
+
+    $refererpath = local_mycoursesfilter_strip_site_path((string)($refererparts['path'] ?? ''));
+    if ($refererpath !== '/course/view.php') {
         return 0;
     }
 
@@ -380,35 +460,61 @@ function local_mycoursesfilter_resolve_category_ids(
     $categoryids = [];
 
     foreach ($tokens as $token) {
-        if (ctype_digit($token)) {
-            $categoryids[] = (int)$token;
-            continue;
-        }
-
-        if ($token === 'this' && $sourcecategoryid > 0) {
-            $categoryids[] = $sourcecategoryid;
-            continue;
-        }
-
-        if ($token === 'parent' && $sourcecategoryid > 0) {
-            $parentid = local_mycoursesfilter_get_category_parent_id($sourcecategoryid);
-            if ($parentid > 0) {
-                $categoryids[] = $parentid;
-            }
-            continue;
-        }
-
-        if ($token === 'children' && $sourcecategoryid > 0) {
-            foreach (local_mycoursesfilter_get_immediate_child_category_ids($sourcecategoryid) as $childid) {
-                if ($childid !== $sourcecategoryid) {
-                    $categoryids[] = $childid;
-                }
-            }
+        foreach (local_mycoursesfilter_resolve_category_token($token, $sourcecategoryid) as $categoryid) {
+            $categoryids[] = $categoryid;
         }
     }
 
+    return local_mycoursesfilter_normalise_category_id_list($categoryids, $scope === 'recursive');
+}
+
+/**
+ * Resolves one category token into category ids.
+ *
+ * @param string $token Parsed category token.
+ * @param int $sourcecategoryid Source course category id.
+ * @return int[]
+ */
+function local_mycoursesfilter_resolve_category_token(string $token, int $sourcecategoryid): array {
+    if (ctype_digit($token)) {
+        return [(int)$token];
+    }
+
+    if ($sourcecategoryid <= 0) {
+        return [];
+    }
+
+    if ($token === 'this') {
+        return [$sourcecategoryid];
+    }
+
+    if ($token === 'parent') {
+        $parentid = local_mycoursesfilter_get_category_parent_id($sourcecategoryid);
+        return $parentid > 0 ? [$parentid] : [];
+    }
+
+    if ($token === 'children') {
+        return array_values(array_filter(
+            local_mycoursesfilter_get_immediate_child_category_ids($sourcecategoryid),
+            static function (int $childid) use ($sourcecategoryid): bool {
+                return $childid !== $sourcecategoryid;
+            }
+        ));
+    }
+
+    return [];
+}
+
+/**
+ * Normalises a list of category ids and optionally expands descendants.
+ *
+ * @param int[] $categoryids Category ids.
+ * @param bool $recursive Whether descendants should be included.
+ * @return int[]
+ */
+function local_mycoursesfilter_normalise_category_id_list(array $categoryids, bool $recursive): array {
     $categoryids = array_values(array_unique(array_filter(array_map('intval', $categoryids))));
-    if ($scope === 'recursive') {
+    if ($recursive) {
         $categoryids = local_mycoursesfilter_expand_descendant_category_ids($categoryids);
     }
 
@@ -423,9 +529,7 @@ function local_mycoursesfilter_resolve_category_ids(
  * @return string
  */
 function local_mycoursesfilter_normalise_category_ids_param(array $categoryids): string {
-    $categoryids = array_values(array_unique(array_filter(array_map('intval', $categoryids))));
-    sort($categoryids);
-
+    $categoryids = local_mycoursesfilter_normalise_category_id_list($categoryids, false);
     if ($categoryids === []) {
         return '';
     }
@@ -678,12 +782,11 @@ function local_mycoursesfilter_match_customfield(int $courseid, string $fieldsho
 /**
  * Checks whether the course matches the selected filter bucket.
  *
- * @param stdClass $course The course record.
  * @param array|null $meta The metadata for the course.
  * @param string $filter The selected filter.
  * @return bool
  */
-function local_mycoursesfilter_match_filter(stdClass $course, ?array $meta, string $filter): bool {
+function local_mycoursesfilter_match_filter(?array $meta, string $filter): bool {
     $meta = $meta ?? [];
     $ishidden = !empty($meta['ishidden']);
     $isfavourite = !empty($meta['isfavourite']);
@@ -704,71 +807,112 @@ function local_mycoursesfilter_match_filter(stdClass $course, ?array $meta, stri
         return true;
     }
 
-    return local_mycoursesfilter_match_status($course, $meta, $filter);
+    return local_mycoursesfilter_match_status($meta, $filter);
 }
 
 /**
- * Checks whether the course matches the selected progress status.
+ * Checks whether the metadata matches the selected progress status.
  *
- * @param stdClass $course The course record.
  * @param array|null $meta The metadata for the course.
  * @param string $status The selected status.
  * @return bool
  */
-function local_mycoursesfilter_match_status(stdClass $course, ?array $meta, string $status): bool {
+function local_mycoursesfilter_match_status(?array $meta, string $status): bool {
     if ($status === 'all' || $status === 'any') {
         return true;
     }
 
     $meta = $meta ?? [];
 
-    $completionenabled = !empty($meta['completionenabled']);
-    $timecompleted = (int)($meta['timecompleted'] ?? 0);
-    $timestarted = (int)($meta['timestarted'] ?? 0);
-    $lastaccess = (int)($meta['lastaccess'] ?? 0);
-    $timeenrolled = (int)($meta['timeenrolled'] ?? 0);
-    $iscompleted = !empty($meta['iscompleted']);
-
-    $hascompletionrecord = ($timecompleted > 0) || ($timestarted > 0) || ($timeenrolled > 0);
-
     if ($status === 'completed') {
-        if ($completionenabled && $hascompletionrecord) {
-            return $timecompleted > 0;
-        }
-
-        if ($completionenabled) {
-            return $iscompleted;
-        }
-
-        return false;
+        return local_mycoursesfilter_match_completed_status($meta);
     }
 
     if ($status === 'notstarted') {
-        if ($completionenabled && $hascompletionrecord) {
-            return ($timestarted === 0) && ($timecompleted === 0);
-        }
-
-        return ($lastaccess === 0) && !$iscompleted;
+        return local_mycoursesfilter_match_notstarted_status($meta);
     }
 
     if ($status === 'inprogress') {
-        if ($completionenabled && $hascompletionrecord) {
-            return ($timestarted > 0) && ($timecompleted === 0);
-        }
-
-        return ($lastaccess > 0) && !$iscompleted;
+        return local_mycoursesfilter_match_inprogress_status($meta);
     }
 
     return true;
 }
 
 /**
+ * Returns whether completion metadata contains explicit completion tracking.
+ *
+ * @param array $meta Course metadata.
+ * @return bool
+ */
+function local_mycoursesfilter_has_completion_record(array $meta): bool {
+    return ((int)($meta['timecompleted'] ?? 0) > 0)
+        || ((int)($meta['timestarted'] ?? 0) > 0)
+        || ((int)($meta['timeenrolled'] ?? 0) > 0);
+}
+
+/**
+ * Matches the completed status.
+ *
+ * @param array $meta Course metadata.
+ * @return bool
+ */
+function local_mycoursesfilter_match_completed_status(array $meta): bool {
+    $completionenabled = !empty($meta['completionenabled']);
+    $hascompletionrecord = local_mycoursesfilter_has_completion_record($meta);
+
+    if ($completionenabled && $hascompletionrecord) {
+        return (int)($meta['timecompleted'] ?? 0) > 0;
+    }
+
+    if ($completionenabled) {
+        return !empty($meta['iscompleted']);
+    }
+
+    return false;
+}
+
+/**
+ * Matches the not started status.
+ *
+ * @param array $meta Course metadata.
+ * @return bool
+ */
+function local_mycoursesfilter_match_notstarted_status(array $meta): bool {
+    $completionenabled = !empty($meta['completionenabled']);
+    $hascompletionrecord = local_mycoursesfilter_has_completion_record($meta);
+
+    if ($completionenabled && $hascompletionrecord) {
+        return ((int)($meta['timestarted'] ?? 0) === 0) && ((int)($meta['timecompleted'] ?? 0) === 0);
+    }
+
+    return ((int)($meta['lastaccess'] ?? 0) === 0) && empty($meta['iscompleted']);
+}
+
+/**
+ * Matches the in-progress status.
+ *
+ * @param array $meta Course metadata.
+ * @return bool
+ */
+function local_mycoursesfilter_match_inprogress_status(array $meta): bool {
+    $completionenabled = !empty($meta['completionenabled']);
+    $hascompletionrecord = local_mycoursesfilter_has_completion_record($meta);
+
+    if ($completionenabled && $hascompletionrecord) {
+        return ((int)($meta['timestarted'] ?? 0) > 0) && ((int)($meta['timecompleted'] ?? 0) === 0);
+    }
+
+    return ((int)($meta['lastaccess'] ?? 0) > 0) && empty($meta['iscompleted']);
+}
+
+/**
  * Builds dropdown item definitions for the toolbar.
  *
- * @param array<string, string> $options Menu options keyed by parameter value.
+ * @param array $options Menu options keyed by parameter value.
  * @param string $paramname Parameter name to write.
  * @param string $currentvalue Current selected value.
- * @param array<string, int|string> $baseparams The base URL parameters.
+ * @param array $baseparams The base URL parameters.
  * @return array<int, array<string, bool|string>>
  */
 function local_mycoursesfilter_build_dropdown_items(
@@ -797,7 +941,7 @@ function local_mycoursesfilter_build_dropdown_items(
 /**
  * Returns the currently active toolbar label.
  *
- * @param array<string, string> $options Available option labels.
+ * @param array $options Available option labels.
  * @param string $currentvalue The selected value.
  * @param string $default Default value.
  * @return string
@@ -813,8 +957,8 @@ function local_mycoursesfilter_get_active_toolbar_label(array $options, string $
 /**
  * Builds hidden input definitions for the toolbar form.
  *
- * @param array<string, int|string> $params Additional parameters to preserve.
- * @return array<int, array{name: string, value: string}>
+ * @param array $params Additional parameters to preserve.
+ * @return array
  */
 function local_mycoursesfilter_build_hidden_inputs(array $params): array {
     $inputs = [];
@@ -836,7 +980,7 @@ function local_mycoursesfilter_build_hidden_inputs(array $params): array {
 /**
  * Builds the reset URL while preserving advanced integration parameters.
  *
- * @param array<string, int|string> $params Parameters to preserve.
+ * @param array $params Parameters to preserve.
  * @return moodle_url
  */
 function local_mycoursesfilter_build_reset_url(array $params): moodle_url {
@@ -883,9 +1027,9 @@ function local_mycoursesfilter_get_view_labels(): array {
 /**
  * Exports the filtered courses as template context data.
  *
- * @param stdClass[] $courses The filtered courses.
- * @param array<int, array<string, int|bool>> $meta Metadata keyed by course id.
- * @return array<string, array<int, array<string, bool|string>>>
+ * @param array $courses The filtered courses.
+ * @param array $meta Metadata keyed by course id.
+ * @return array
  */
 function local_mycoursesfilter_export_course_cards_context(array $courses, array $meta = []): array {
     global $DB;

@@ -22,8 +22,9 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 $string['allowtitleoverride'] = 'Allow title override from URL';
-$string['allowtitleoverride_desc'] = 'Allows the title URL parameter to override the configured default page title.';
+$string['allowtitleoverride_desc'] = 'Allows the URL title parameter to override the default page title.';
 $string['categoryscope'] = 'Default category scope';
 $string['categoryscope_desc'] = 'Controls whether selected categories include all subcategories by default.';
 $string['categoryscope_only'] = 'Only selected categories';
@@ -32,13 +33,13 @@ $string['courseoverview'] = 'Course overview';
 $string['defaulttitle'] = 'Default page title';
 $string['defaulttitle_desc'] = 'Optional default title for the filtered page. Leave empty to use the language string.';
 $string['displayarialabel'] = 'Dropdown menu for the display';
-$string['filteredcourses'] = 'Filtered courses: {$a}';
 $string['filter_all'] = 'All';
 $string['filter_completed'] = 'Completed';
 $string['filter_favourites'] = 'Favourites';
 $string['filter_hidden'] = 'Removed from view';
 $string['filter_inprogress'] = 'In progress';
 $string['filter_notstarted'] = 'Not started';
+$string['filteredcourses'] = 'Filtered courses: {$a}';
 $string['groupingarialabel'] = 'Dropdown menu for the grouping';
 $string['nocoursefound'] = 'No courses found.';
 $string['pagetitle'] = 'My courses (filtered)';

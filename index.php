@@ -131,7 +131,7 @@ foreach ($courses as $course) {
     }
 
     $cmeta = $meta[$course->id] ?? null;
-    if (!local_mycoursesfilter_match_filter($course, $cmeta, $filter)) {
+    if (!local_mycoursesfilter_match_filter($cmeta, $filter)) {
         continue;
     }
 
