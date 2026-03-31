@@ -28,6 +28,9 @@ require_once(__DIR__ . '/lib.php');
 
 require_login();
 
+$systemcontext = context_system::instance();
+require_capability('local/mycoursesfilter:view', $systemcontext);
+
 $q = optional_param('q', '', PARAM_TEXT);
 $tag = optional_param('tag', '', PARAM_TEXT);
 $rawcatid = optional_param('catid', '', PARAM_RAW_TRIMMED);
@@ -70,8 +73,6 @@ if ($filter === 'any') {
     $filter = 'all';
 }
 
-local_mycoursesfilter_require_any_course_role(['student']);
-
 $pageparams = [
     'q' => $q,
     'tag' => $tag,
@@ -102,7 +103,7 @@ $pageurl = new moodle_url('/local/mycoursesfilter/index.php', array_filter($page
 }));
 
 $PAGE->set_url($pageurl);
-$PAGE->set_context(context_system::instance());
+$PAGE->set_context($systemcontext);
 $PAGE->add_body_classes(['limitedwidth', 'page-mycourses']);
 $PAGE->set_pagelayout('mycourses');
 $PAGE->set_pagetype('my-index');

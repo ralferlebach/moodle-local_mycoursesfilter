@@ -24,7 +24,6 @@
  */
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
-require_once(__DIR__ . '/../../../../lib/behat/behat_forms.php');
 
 use Behat\Gherkin\Node\TableNode;
 
@@ -106,7 +105,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Visits the filter page with the supplied parameters.
      *
-     * @param array $params The URL parameters.
+     * @param array<string, string> $params The URL parameters.
      * @return void
      */
     protected function visit_filter_page(array $params): void {

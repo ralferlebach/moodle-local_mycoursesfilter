@@ -20,10 +20,8 @@ The plugin is already usable for controlled production scenarios, but it is not 
 
 ### What still limits maturity
 
-- Access control is still based on a hard-coded accepted course role (`student`) instead of a configurable capability model
-- No Privacy API provider is implemented yet
-- No dedicated admin UI for accepted roles/capabilities exists yet
-- The plugin has no database schema, but operational behaviour still depends on site-specific conventions for roles, tags, custom fields, and link generation
+- The plugin stores site-wide user preferences for toolbar state and therefore needs a Privacy API provider
+- It has no own database tables, but still reads personal course-related metadata from core subsystems such as enrolment, favourites, completion, and hidden-course preferences
 - It should still be treated as a focused integration plugin rather than a fully generic drop-in replacement for core my/courses
 
 ## Security and suitability for production systems
@@ -42,10 +40,10 @@ The current implementation is reasonably safe for production use **when deployed
 ### Remaining security and operations recommendations
 
 - Prefer generating plugin links from trusted Moodle renderers, blocks, or local plugins rather than allowing arbitrary user-supplied URLs
-- Replace the hard-coded role gate with a dedicated capability before broad production rollout
-- Add a Privacy API provider before deploying on sites with strict compliance requirements
+- Keep the dedicated capability check in place and review role assignments for that capability during rollout
+- Review the exported privacy metadata during deployment on sites with strict compliance requirements
 - Keep Behat and PHPUnit in CI mandatory, not advisory, for future changes
-- Remove stale duplicate CI files outside `.github/workflows/` from the repository, so only the active workflow remains authoritative
+- Remove stale duplicate CI files outside `.github/workflows/` and editor metadata from the repository, so only the active workflow remains authoritative
 
 ## Feature overview
 
@@ -102,6 +100,20 @@ The plugin currently provides the following site-level settings:
   - when empty, the plugin falls back to the language string
 - **Allow title override from URL**
   - when enabled, the `title` URL parameter may override the configured default title
+
+
+## Privacy
+
+The plugin does **not** create its own database tables and does not persist course data itself.
+
+However, it **does** store four site-wide user preferences for toolbar persistence in Moodle's user preferences subsystem:
+
+- `local_mycoursesfilter_filter`
+- `local_mycoursesfilter_sort`
+- `local_mycoursesfilter_dir`
+- `local_mycoursesfilter_view`
+
+A Privacy API provider is therefore required and included. The provider declares these preferences and exports them for user data requests.
 
 ## URL parameters
 
@@ -227,11 +239,9 @@ Filter by custom field and show a Back button:
 
 The page requires an authenticated user.
 
-At the moment, non-admin access is additionally restricted through `local_mycoursesfilter_require_any_course_role()` in `index.php`, currently with the accepted role shortname `student`.
+Access is additionally protected through the capability `local/mycoursesfilter:view`, which is checked at system context in `index.php`.
 
-Administrators bypass this role restriction.
-
-For broader rollout, replacing this with a dedicated capability is recommended.
+This removes the earlier hard-coded dependency on the `student` role and makes the plugin reusable in sites with different enrolment and role models.
 
 ## Status filtering logic
 
@@ -269,9 +279,9 @@ vendor/bin/behat --config /path/to/behat/behat.yml local/mycoursesfilter/tests/b
 
 ## Recommendations before broad production rollout
 
-- add a Privacy API provider
-- replace role-shortname checks with capabilities or plugin settings
-- remove duplicate legacy CI files from the plugin root
+- review and document local assignments for `local/mycoursesfilter:view`
+- keep the Privacy API provider in sync when new preferences or stored data are introduced
+- remove duplicate legacy CI files from the plugin root and keep `.github/workflows/` as the only authoritative workflow location
 - continue enforcing matrix CI across supported Moodle and database combinations
 - add more Behat coverage for category keywords, return URLs, and title override behaviour from real integration entry points
 

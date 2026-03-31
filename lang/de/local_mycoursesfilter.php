@@ -23,6 +23,7 @@
  */
 
 
+
 $string['allowtitleoverride'] = 'Titelüberschreibung per URL erlauben';
 $string['allowtitleoverride_desc'] = 'Erlaubt es, den Standardtitel per URL-Parameter title zu überschreiben.';
 $string['categoryscope'] = 'Standardbereich für Kategorien';
@@ -41,9 +42,16 @@ $string['filter_inprogress'] = 'In Bearbeitung';
 $string['filter_notstarted'] = 'Noch nicht begonnen';
 $string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['groupingarialabel'] = 'Dropdown-Menü für die Gruppierung';
+$string['mycoursesfilter:view'] = 'Die gefilterte Meine-Kurse-Seite anzeigen';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
 $string['pluginname'] = 'Meine Kurse – Filterlink';
+$string['privacy:metadata:preference:dir'] = 'Die bevorzugte Sortierrichtung der Kursübersicht: {$a}';
+$string['privacy:metadata:preference:filter'] = 'Die bevorzugte Filterauswahl der Kursübersicht: {$a}';
+$string['privacy:metadata:preference:sort'] = 'Die bevorzugte Sortierung der Kursübersicht: {$a}';
+$string['privacy:metadata:preference:view'] = 'Der bevorzugte Anzeigemodus der Kursübersicht: {$a}';
+$string['privacy:preference:dir:asc'] = 'Aufsteigend';
+$string['privacy:preference:dir:desc'] = 'Absteigend';
 $string['searchbyname'] = 'Kurse suchen';
 $string['sort_alpha'] = 'Sortiert nach Kursname';
 $string['sort_lastaccess'] = 'Sortiert nach letztem Zugriff';

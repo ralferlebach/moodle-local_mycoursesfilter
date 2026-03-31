@@ -46,9 +46,12 @@ function local_mycoursesfilter_resolve_toolbar_preference(
     global $USER;
 
     $prefname = 'local_mycoursesfilter_' . $name;
+    $sentinel = '__local_mycoursesfilter_missing__';
+    $requestvalue = optional_param($name, $sentinel, $paramtype);
+    $hasrequestvalue = ($requestvalue !== $sentinel);
 
-    if (array_key_exists($name, $_GET)) {
-        $value = optional_param($name, $default, $paramtype);
+    if ($hasrequestvalue) {
+        $value = $requestvalue;
     } else {
         $value = get_user_preferences($prefname, $default, $USER->id);
     }
@@ -57,7 +60,7 @@ function local_mycoursesfilter_resolve_toolbar_preference(
         $value = $default;
     }
 
-    if (array_key_exists($name, $_GET)) {
+    if ($hasrequestvalue) {
         set_user_preference($prefname, $value, $USER->id);
     }
 
@@ -551,43 +554,6 @@ function local_mycoursesfilter_get_filter_labels(): array {
         'favourites' => get_string('filter_favourites', 'local_mycoursesfilter'),
         'hidden' => get_string('filter_hidden', 'local_mycoursesfilter'),
     ];
-}
-
-/**
- * Ensures that the current user has at least one of the supplied course roles.
- *
- * @param string[] $roleshortnames The role shortnames to accept.
- * @return void
- * @throws moodle_exception If the current user does not match the required roles.
- */
-function local_mycoursesfilter_require_any_course_role(array $roleshortnames): void {
-    global $DB, $USER;
-
-    if (is_siteadmin($USER)) {
-        return;
-    }
-
-    if (empty($roleshortnames)) {
-        return;
-    }
-
-    [$insql, $inparams] = $DB->get_in_or_equal($roleshortnames, SQL_PARAMS_NAMED, 'role');
-    $params = $inparams + [
-        'userid' => $USER->id,
-        'contextlevel' => CONTEXT_COURSE,
-    ];
-
-    $sql = "SELECT 1
-              FROM {role_assignments} ra
-              JOIN {context} ctx ON ctx.id = ra.contextid
-              JOIN {role} r ON r.id = ra.roleid
-             WHERE ra.userid = :userid
-               AND ctx.contextlevel = :contextlevel
-               AND r.shortname {$insql}";
-
-    if (!$DB->record_exists_sql($sql, $params)) {
-        throw new moodle_exception('nopermissions', 'error', '', get_string('pluginname', 'local_mycoursesfilter'));
-    }
 }
 
 /**
