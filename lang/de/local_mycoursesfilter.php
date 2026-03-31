@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-
 $string['allowtitleoverride'] = 'Titelüberschreibung per URL erlauben';
 $string['allowtitleoverride_desc'] = 'Erlaubt es, den Standardtitel per URL-Parameter title zu überschreiben.';
 $string['categoryscope'] = 'Standardbereich für Kategorien';
@@ -34,26 +32,26 @@ $string['courseoverview'] = 'Kursübersicht';
 $string['defaulttitle'] = 'Standardtitel der Seite';
 $string['defaulttitle_desc'] = 'Optionaler Standardtitel für die gefilterte Seite. Leer lassen, um den Sprachstring zu verwenden.';
 $string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
+$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['filter_all'] = 'Alle';
 $string['filter_completed'] = 'Abgeschlossen';
 $string['filter_favourites'] = 'Favoriten';
 $string['filter_hidden'] = 'Aus Ansicht entfernte';
 $string['filter_inprogress'] = 'In Bearbeitung';
 $string['filter_notstarted'] = 'Noch nicht begonnen';
-$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['groupingarialabel'] = 'Dropdown-Menü für die Gruppierung';
 $string['mycoursesfilter:view'] = 'Die gefilterte Meine-Kurse-Seite anzeigen';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
+$string['persisttoolbar'] = 'Persistenz der Werkzeugleiste';
+$string['persisttoolbar_core'] = 'Kompatible Core-Preferences aus Meine Kurse wiederverwenden';
+$string['persisttoolbar_desc'] = 'Legt fest, ob die Seite kompatible Core-Preferences aus Meine Kurse wiederverwendet oder die Werkzeugleiste rein requestbasiert bleibt.';
+$string['persisttoolbar_none'] = 'Auswahlen der Werkzeugleiste nicht persistieren';
 $string['pluginname'] = 'Meine Kurse – Filterlink';
-$string['privacy:metadata:preference:dir'] = 'Die bevorzugte Sortierrichtung der Kursübersicht: {$a}';
-$string['privacy:metadata:preference:filter'] = 'Die bevorzugte Filterauswahl der Kursübersicht: {$a}';
-$string['privacy:metadata:preference:sort'] = 'Die bevorzugte Sortierung der Kursübersicht: {$a}';
-$string['privacy:metadata:preference:view'] = 'Der bevorzugte Anzeigemodus der Kursübersicht: {$a}';
-$string['privacy:preference:dir:asc'] = 'Aufsteigend';
-$string['privacy:preference:dir:desc'] = 'Absteigend';
+$string['privacy:metadata'] = 'Das Plugin local_mycoursesfilter speichert keine eigenen personenbezogenen Daten.';
 $string['searchbyname'] = 'Kurse suchen';
 $string['sort_alpha'] = 'Sortiert nach Kursname';
+$string['sort_coursename'] = 'Sortiert nach Kursname';
 $string['sort_lastaccess'] = 'Sortiert nach letztem Zugriff';
 $string['sort_lastenrolled'] = 'Sortiert nach letzter Einschreibung';
 $string['sort_shortname'] = 'Sortiert nach Kurzname';
