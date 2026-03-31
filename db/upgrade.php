@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for local_mycoursesfilter.
+ * Upgrade stub for local_mycoursesfilter.
  *
  * @package    local_mycoursesfilter
  * @copyright  2026 Ralf Erlebach <moodle-dev@ralferlebach.de>
@@ -24,8 +24,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_mycoursesfilter';
-$plugin->version   = 2026033104;
-$plugin->requires  = 2022041900; // Moodle 4.0+.
-$plugin->release   = '0.5.2-beta';
-$plugin->maturity  = MATURITY_BETA;
+/**
+ * Executes plugin upgrades.
+ *
+ * No plugin-specific upgrade steps are currently required.
+ *
+ * @param int $oldversion The version being upgraded from.
+ * @return bool
+ */
+function xmldb_local_mycoursesfilter_upgrade(int $oldversion): bool {
+    return true;
+}

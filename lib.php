@@ -384,6 +384,10 @@ function local_mycoursesfilter_resolve_return_url(string $rawreturnurl): string 
  * @return string
  */
 function local_mycoursesfilter_normalise_explicit_local_url(string $rawurl): string {
+    if (preg_match('/[\x00-\x1F\x7F\\]/', $rawurl) || strpos($rawurl, '//') === 0) {
+        return '';
+    }
+
     $cleanurl = clean_param($rawurl, PARAM_LOCALURL);
     if ($cleanurl === '' || $cleanurl !== $rawurl || strpos($cleanurl, '/') !== 0) {
         return '';
@@ -627,7 +631,7 @@ function local_mycoursesfilter_resolve_category_token(string $token, int $source
  * @return int[]
  */
 function local_mycoursesfilter_normalise_category_id_list(array $categoryids, bool $recursive): array {
-    $categoryids = array_values(array_unique(array_filter(array_map('intval', $categoryids))));
+    $categoryids = local_mycoursesfilter_filter_existing_category_ids($categoryids);
     if ($recursive) {
         $categoryids = local_mycoursesfilter_expand_descendant_category_ids($categoryids);
     }

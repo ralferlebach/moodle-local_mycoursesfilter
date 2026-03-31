@@ -32,23 +32,15 @@ $systemcontext = context_system::instance();
 require_capability('local/mycoursesfilter:view', $systemcontext);
 
 $coursename = optional_param('coursename', '', PARAM_TEXT);
-if ($coursename === '') {
-    $coursename = optional_param('q', '', PARAM_TEXT);
-}
 $tag = optional_param('tag', '', PARAM_TEXT);
 $rawcatid = optional_param('catid', '', PARAM_RAW_TRIMMED);
 $rawcustomfield = optional_param('customfield', '', PARAM_RAW_TRIMMED);
-$legacyfield = optional_param('field', '', PARAM_ALPHANUMEXT);
-$legacyvalue = optional_param('value', '', PARAM_TEXT);
 $rawreturnurl = optional_param('returnurl', '', PARAM_RAW_TRIMMED);
 $titleoverride = optional_param('title', '', PARAM_TEXT);
 $explicitcourseid = optional_param('courseid', 0, PARAM_INT);
 $only = optional_param('only', 0, PARAM_BOOL) === 1;
 $recursive = optional_param('recursive', 0, PARAM_BOOL) === 1;
 
-if ($rawcustomfield === '' && $legacyfield !== '') {
-    $rawcustomfield = local_mycoursesfilter_build_customfield_param($legacyfield, $legacyvalue);
-}
 $customfield = local_mycoursesfilter_parse_customfield_param($rawcustomfield);
 
 $returnurl = local_mycoursesfilter_resolve_return_url($rawreturnurl);

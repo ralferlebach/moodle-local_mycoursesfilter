@@ -90,6 +90,10 @@ final class lib_navigation_test extends \advanced_testcase {
 
         $this->assertSame([(int)$root->id], \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'only'));
         $this->assertSame(
+            [(int)$root->id],
+            \local_mycoursesfilter_resolve_category_ids((string)$root->id . ',999999999', 'only')
+        );
+        $this->assertSame(
             [(int)$root->id, (int)$child->id, (int)$grandchild->id],
             \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'recursive')
         );
@@ -161,6 +165,10 @@ final class lib_navigation_test extends \advanced_testcase {
         $this->assertSame($sitepath . '/course/view.php?id=17', \local_mycoursesfilter_resolve_return_url('this'));
         $this->assertSame($sitepath . '/my/courses.php', \local_mycoursesfilter_resolve_return_url('/my/courses.php'));
         $this->assertSame('', \local_mycoursesfilter_resolve_return_url('https://evil.example/'));
+        $this->assertSame('', \local_mycoursesfilter_resolve_return_url('//evil.example/'));
+
+        $_SERVER['HTTP_REFERER'] = 'https://evil.example/course/view.php?id=17';
+        $this->assertSame('', \local_mycoursesfilter_resolve_return_url('this'));
     }
 
     /**
