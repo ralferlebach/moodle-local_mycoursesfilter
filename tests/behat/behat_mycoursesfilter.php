@@ -23,10 +23,8 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
-require_once($CFG->libdir . '/behat/behat_base.php');
-require_once($CFG->libdir . '/behat/behat_forms.php');
+require_once(dirname(__DIR__, 4) . '/lib/behat/behat_base.php');
+require_once(dirname(__DIR__, 4) . '/lib/behat/behat_forms.php');
 
 use Behat\Gherkin\Node\TableNode;
 
