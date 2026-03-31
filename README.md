@@ -1,14 +1,14 @@
-# local_mycoursesfilter
+# MyCourses (Filtered)
 
-**local_mycoursesfilter** is a Moodle plugin that provides a dedicated page displaying only the courses in which the currently logged-in user is enrolled. It offers filtering, sorting, and view customization options.
+**MyCourses (Filtered)** is a Moodle plugin that provides a dedicated page displaying only the courses in which the currently logged-in user is enrolled.
+
+It offers filtering, sorting, and view customization options by url, so you may provide your students with a specifiv dashboard of their learning materials in a specific section in your Moodle instance.
 
 ## Features
 
-- Filter courses by status, favorites, or hidden courses.
-- Search courses by name.
-- Sort courses by name, last access, or enrollment date.
-- Switch between card, list, or summary views.
+- Filter and sort courses to whoch the user is enrolled in by url request.
 - Optional "Back" button to return to the referring page.
+- Additional Search and Sort function for the user as well as Switching between card, list, or summary view.
 
 ## Installation
 
@@ -21,7 +21,7 @@
 
 | Parameter      | Description                                                                 |
 |----------------|-----------------------------------------------------------------------------|
-| `coursename`   | Search for courses by name (partial match).                                |
+| `coursename`   | Search for courses by name or short name (partial match).                                |
 | `filter`       | Filter courses (`all`, `notstarted`, `inprogress`, `completed`, `favourites`, `hidden`). |
 | `sort`         | Sort courses (`lastaccess`, `coursename`, `shortname`, `lastenrolled`).    |
 | `view`         | Display mode (`card`, `list`, `summary`).                                  |
@@ -40,8 +40,7 @@
 
 ## Security
 
-- URL parameters are validated to ensure safe usage.
-- Only local return URLs are allowed.
+- URL parameters are validated to ensure safe usage, only local return URLs are allowed.
 
 ## Copyright and Issue Tracker
 
