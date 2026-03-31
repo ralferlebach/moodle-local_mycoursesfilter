@@ -34,14 +34,14 @@ require_once($CFG->libdir . '/completionlib.php');
  *
  * @param string $name The request parameter and preference suffix.
  * @param string $default The default value.
- * @param int $paramtype The Moodle PARAM_* type.
+ * @param string $paramtype The Moodle PARAM_* type.
  * @param string[] $allowed Allowed values.
  * @return string
  */
 function local_mycoursesfilter_resolve_toolbar_preference(
     string $name,
     string $default,
-    int $paramtype,
+    string $paramtype,
     array $allowed
 ): string {
     global $USER;
