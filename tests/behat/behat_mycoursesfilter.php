@@ -83,10 +83,10 @@ class behat_mycoursesfilter extends behat_base {
 
 
 
+    /** @When /^I am on the local my courses filter page with the following parameters:$/ */
     /**
      * Opens the local my courses filter page with arbitrary parameters.
      *
-     * @When /^I am on the local my courses filter page with the following parameters:$/
      * @param TableNode $table The parameter table.
      * @return void
      */
