@@ -131,14 +131,14 @@ function local_mycoursesfilter_map_toolbar_value_from_core(string $name, string 
  *
  * @param string $name The request parameter name.
  * @param string $default The default value.
- * @param string $paramtype The Moodle PARAM_* type.
+ * @param int $paramtype The Moodle PARAM_* type.
  * @param string[] $allowed Allowed values.
  * @return string
  */
 function local_mycoursesfilter_resolve_toolbar_preference(
     string $name,
     string $default,
-    string $paramtype,
+    int $paramtype,
     array $allowed
 ): string {
     global $USER;
@@ -384,7 +384,7 @@ function local_mycoursesfilter_resolve_return_url(string $rawreturnurl): string 
  * @return string
  */
 function local_mycoursesfilter_normalise_explicit_local_url(string $rawurl): string {
-    if (preg_match('/[\x00-\x1F\x7F\\]/', $rawurl) || strpos($rawurl, '//') === 0) {
+    if (preg_match('/[\x00-\x1F\x7F]/', $rawurl) || strpos($rawurl, '\\') !== false || strpos($rawurl, '//') === 0) {
         return '';
     }
 
@@ -583,6 +583,8 @@ function local_mycoursesfilter_resolve_category_ids(
         }
     }
 
+    $categoryids = local_mycoursesfilter_filter_existing_category_ids($categoryids);
+
     return local_mycoursesfilter_normalise_category_id_list($categoryids, $scope === 'recursive');
 }
 
@@ -624,6 +626,33 @@ function local_mycoursesfilter_resolve_category_token(string $token, int $source
 }
 
 /**
+ * Filters a category id list down to existing categories.
+ *
+ * @param int[] $categoryids Candidate category ids.
+ * @return int[]
+ */
+function local_mycoursesfilter_filter_existing_category_ids(array $categoryids): array {
+    global $DB;
+
+    $normalised = [];
+    foreach ($categoryids as $categoryid) {
+        $categoryid = (int)$categoryid;
+        if ($categoryid > 0) {
+            $normalised[$categoryid] = $categoryid;
+        }
+    }
+
+    if ($normalised === []) {
+        return [];
+    }
+
+    [$insql, $params] = $DB->get_in_or_equal(array_values($normalised), SQL_PARAMS_NAMED, 'cat');
+    $existingids = $DB->get_fieldset_select('course_categories', 'id', "id $insql", $params);
+
+    return array_map('intval', $existingids);
+}
+
+/**
  * Normalises a list of category ids and optionally expands descendants.
  *
  * @param int[] $categoryids Category ids.
@@ -631,7 +660,15 @@ function local_mycoursesfilter_resolve_category_token(string $token, int $source
  * @return int[]
  */
 function local_mycoursesfilter_normalise_category_id_list(array $categoryids, bool $recursive): array {
-    $categoryids = local_mycoursesfilter_filter_existing_category_ids($categoryids);
+    $normalised = [];
+    foreach ($categoryids as $categoryid) {
+        $categoryid = (int)$categoryid;
+        if ($categoryid > 0) {
+            $normalised[$categoryid] = $categoryid;
+        }
+    }
+
+    $categoryids = array_values($normalised);
     if ($recursive) {
         $categoryids = local_mycoursesfilter_expand_descendant_category_ids($categoryids);
     }

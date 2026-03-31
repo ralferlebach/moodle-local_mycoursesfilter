@@ -22,16 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Executes plugin upgrades.
  *
  * No plugin-specific upgrade steps are currently required.
  *
- * @param int $oldversion The version being upgraded from.
+ * @param int $_oldversion The version being upgraded from.
  * @return bool
  */
-function xmldb_local_mycoursesfilter_upgrade(int $oldversion): bool {
+function xmldb_local_mycoursesfilter_upgrade(int $_oldversion): bool {
+    unset($_oldversion);
+
     return true;
 }
