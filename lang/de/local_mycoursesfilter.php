@@ -24,8 +24,8 @@
 
 $string['courseoverview'] = 'Kursübersicht';
 $string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
-$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['filter_all'] = 'Alle';
+$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['filter_completed'] = 'Abgeschlossen';
 $string['filter_favourites'] = 'Favoriten';
 $string['filter_hidden'] = 'Aus Ansicht entfernte';

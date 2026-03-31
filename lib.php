@@ -397,11 +397,11 @@ function local_mycoursesfilter_match_status(stdClass $course, ?array $meta, stri
 /**
  * Builds dropdown item definitions for the toolbar.
  *
- * @param array<string, string> $options Menu options keyed by parameter value.
+ * @param array $options Menu options keyed by parameter value.
  * @param string $paramname Parameter name to write.
  * @param string $currentvalue Current selected value.
- * @param array<string, int|string> $baseparams The base URL parameters.
- * @return array<int, array<string, bool|string>>
+ * @param array $baseparams The base URL parameters.
+ * @return array
  */
 function local_mycoursesfilter_build_dropdown_items(
     array $options,
@@ -429,7 +429,7 @@ function local_mycoursesfilter_build_dropdown_items(
 /**
  * Returns the currently active toolbar label.
  *
- * @param array<string, string> $options Available option labels.
+ * @param array $options Available option labels.
  * @param string $currentvalue The selected value.
  * @param string $default Default value.
  * @return string
@@ -445,8 +445,8 @@ function local_mycoursesfilter_get_active_toolbar_label(array $options, string $
 /**
  * Builds hidden input definitions for the toolbar form.
  *
- * @param array<string, int|string> $params Additional parameters to preserve.
- * @return array<int, array{name: string, value: string}>
+ * @param array $params Additional parameters to preserve.
+ * @return array
  */
 function local_mycoursesfilter_build_hidden_inputs(array $params): array {
     $inputs = [];
@@ -468,7 +468,7 @@ function local_mycoursesfilter_build_hidden_inputs(array $params): array {
 /**
  * Builds the reset URL while preserving advanced integration parameters.
  *
- * @param array<string, int|string> $params Parameters to preserve.
+ * @param array $params Parameters to preserve.
  * @return moodle_url
  */
 function local_mycoursesfilter_build_reset_url(array $params): moodle_url {
@@ -515,9 +515,9 @@ function local_mycoursesfilter_get_view_labels(): array {
 /**
  * Exports the filtered courses as template context data.
  *
- * @param stdClass[] $courses The filtered courses.
- * @param array<int, array<string, int|bool>> $meta Metadata keyed by course id.
- * @return array<string, array<int, array<string, bool|string>>>
+ * @param array $courses The filtered courses.
+ * @param array $meta Metadata keyed by course id.
+ * @return array
  */
 function local_mycoursesfilter_export_course_cards_context(array $courses, array $meta = []): array {
     global $DB;

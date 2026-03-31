@@ -66,7 +66,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page with query and return URL.
      *
-     * @When /^I am on the local my courses filter page with query "(?P<query_string>(?:[^"\]|\.)*)" and return URL "(?P<returnurl_string>(?:[^"\]|\.)*)"$/
+     * @When /^I am on the local my courses filter page with query "([^"]*)" and return URL "([^"]*)"$/
      * @param string $query The course search query.
      * @param string $returnurl The return URL.
      * @return void
@@ -105,7 +105,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Visits the filter page with the supplied parameters.
      *
-     * @param array<string, string> $params The URL parameters.
+     * @param array $params The URL parameters.
      * @return void
      */
     protected function visit_filter_page(array $params): void {
