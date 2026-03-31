@@ -879,7 +879,7 @@ function local_mycoursesfilter_match_inprogress_status(array $meta): bool {
  * @param string $paramname Parameter name to write.
  * @param string $currentvalue Current selected value.
  * @param array $baseparams The base URL parameters.
- * @return array<int, array<string, bool|string>>
+ * @return array
  */
 function local_mycoursesfilter_build_dropdown_items(
     array $options,

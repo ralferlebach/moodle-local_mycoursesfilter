@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-
 $string['allowtitleoverride'] = 'Allow title override from URL';
 $string['allowtitleoverride_desc'] = 'Allows the URL title parameter to override the default page title.';
 $string['categoryscope'] = 'Default category scope';

@@ -88,9 +88,9 @@ final class lib_navigation_test extends \advanced_testcase {
         $child = $generator->create_category(['name' => 'Child', 'parent' => $root->id]);
         $grandchild = $generator->create_category(['name' => 'Grandchild', 'parent' => $child->id]);
 
-        $this->assertSame([$root->id], \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'only'));
+        $this->assertSame([(int)$root->id], \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'only'));
         $this->assertSame(
-            [$root->id, $child->id, $grandchild->id],
+            [(int)$root->id, (int)$child->id, (int)$grandchild->id],
             \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'recursive')
         );
     }
@@ -110,10 +110,10 @@ final class lib_navigation_test extends \advanced_testcase {
         $grandchild = $generator->create_category(['name' => 'Grandchild', 'parent' => $child->id]);
         $course = $generator->create_course(['category' => $child->id]);
 
-        $this->assertSame([$child->id], \local_mycoursesfilter_resolve_category_ids('this', 'only', $course->id));
-        $this->assertSame([$grandchild->id], \local_mycoursesfilter_resolve_category_ids('children', 'only', $course->id));
+        $this->assertSame([(int)$child->id], \local_mycoursesfilter_resolve_category_ids('this', 'only', $course->id));
+        $this->assertSame([(int)$grandchild->id], \local_mycoursesfilter_resolve_category_ids('children', 'only', $course->id));
         $this->assertSame(
-            [$root->id, $child->id, $sibling->id, $grandchild->id],
+            [(int)$root->id, (int)$child->id, (int)$sibling->id, (int)$grandchild->id],
             \local_mycoursesfilter_resolve_category_ids('parent', 'recursive', $course->id)
         );
     }

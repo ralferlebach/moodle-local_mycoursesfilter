@@ -22,8 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
-
 $string['allowtitleoverride'] = 'Titelüberschreibung per URL erlauben';
 $string['allowtitleoverride_desc'] = 'Erlaubt es, den Standardtitel per URL-Parameter title zu überschreiben.';
 $string['categoryscope'] = 'Standardbereich für Kategorien';
