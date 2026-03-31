@@ -30,20 +30,22 @@ require_login();
 
 $q = optional_param('q', '', PARAM_TEXT);
 $tag = optional_param('tag', '', PARAM_TEXT);
-$catidraw = optional_param('catid', '', PARAM_RAW_TRIMMED);
+$rawcatid = optional_param('catid', '', PARAM_RAW_TRIMMED);
 $field = optional_param('field', '', PARAM_ALPHANUMEXT);
 $fvalue = optional_param('value', '', PARAM_TEXT);
-$title = optional_param('title', '', PARAM_TEXT);
-$returnurlraw = optional_param('returnurl', '', PARAM_RAW_TRIMMED);
+$rawreturnurl = optional_param('returnurl', '', PARAM_RAW_TRIMMED);
 $legacyfilter = optional_param('status', '', PARAM_ALPHA);
+$titleoverride = optional_param('title', '', PARAM_TEXT);
+$explicitcourseid = optional_param('courseid', 0, PARAM_INT);
+$only = optional_param('only', 0, PARAM_BOOL) === 1;
+$recursive = optional_param('recursive', 0, PARAM_BOOL) === 1;
 
-$categoryscope = local_mycoursesfilter_resolve_category_scope();
-$referrercontext = local_mycoursesfilter_get_referrer_category_context();
-$categoryfilteractive = trim($catidraw) !== '';
-$categoryids = local_mycoursesfilter_resolve_category_ids($catidraw, $referrercontext, $categoryscope);
-$catid = local_mycoursesfilter_get_category_param_value($categoryids, $categoryfilteractive);
-$returnurl = local_mycoursesfilter_resolve_return_url($returnurlraw);
-$pagetitle = trim($title) !== '' ? trim($title) : get_string('pagetitle', 'local_mycoursesfilter');
+$returnurl = local_mycoursesfilter_resolve_return_url($rawreturnurl);
+$sourcecourseid = local_mycoursesfilter_resolve_source_course_id($explicitcourseid);
+$categoryscope = local_mycoursesfilter_resolve_category_scope($only, $recursive);
+$resolvedcategoryids = local_mycoursesfilter_resolve_category_ids($rawcatid, $categoryscope, $sourcecourseid);
+$normalisedcatid = local_mycoursesfilter_normalise_category_ids_param($resolvedcategoryids);
+$pagetitle = local_mycoursesfilter_resolve_page_title($titleoverride);
 
 $filterlabels = local_mycoursesfilter_get_filter_labels();
 $sortlabels = local_mycoursesfilter_get_sort_labels();
@@ -70,24 +72,34 @@ if ($filter === 'any') {
 
 local_mycoursesfilter_require_any_course_role(['student']);
 
-$scopeparams = local_mycoursesfilter_get_category_scope_params($categoryscope);
 $pageparams = [
     'q' => $q,
     'tag' => $tag,
-    'catid' => $catid,
+    'catid' => $normalisedcatid,
     'field' => $field,
     'value' => $fvalue,
-    'title' => $title,
     'filter' => $filter,
     'sort' => $sort,
     'dir' => $dir,
     'view' => $view,
-] + $scopeparams;
+    'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
+];
 if ($returnurl !== '') {
     $pageparams['returnurl'] = $returnurl;
 }
+if ($explicitcourseid > 0) {
+    $pageparams['courseid'] = $explicitcourseid;
+}
+if ($only) {
+    $pageparams['only'] = 1;
+}
+if ($recursive) {
+    $pageparams['recursive'] = 1;
+}
 
-$pageurl = new moodle_url('/local/mycoursesfilter/index.php', $pageparams);
+$pageurl = new moodle_url('/local/mycoursesfilter/index.php', array_filter($pageparams, static function ($item): bool {
+    return $item !== '' && $item !== 0;
+}));
 
 $PAGE->set_url($pageurl);
 $PAGE->set_context(context_system::instance());
@@ -108,7 +120,7 @@ foreach ($courses as $course) {
     if (!local_mycoursesfilter_match_name($course, $q)) {
         continue;
     }
-    if (!local_mycoursesfilter_match_category($course, $categoryids, $categoryfilteractive)) {
+    if (!local_mycoursesfilter_match_categories($course, $resolvedcategoryids)) {
         continue;
     }
     if ($tag !== '' && !local_mycoursesfilter_match_tag((int)$course->id, $tag)) {
@@ -168,18 +180,28 @@ if (!empty($filtered)) {
 $toolbarparams = [
     'q' => $q,
     'tag' => $tag,
-    'catid' => $catid,
+    'catid' => $normalisedcatid,
     'field' => $field,
     'value' => $fvalue,
-    'title' => $title,
     'filter' => $filter,
     'sort' => $sort,
     'dir' => $dir,
     'view' => $view,
+    'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
     'returnurl' => $returnurl,
-] + $scopeparams;
+];
+if ($explicitcourseid > 0) {
+    $toolbarparams['courseid'] = $explicitcourseid;
+}
+if ($only) {
+    $toolbarparams['only'] = 1;
+}
+if ($recursive) {
+    $toolbarparams['recursive'] = 1;
+}
 
 $templatecontext = [
+    'pageheading' => $pagetitle,
     'showbackbutton' => $returnurl !== '',
     'backurl' => $returnurl,
     'backlabel' => get_string('back'),
@@ -199,16 +221,19 @@ $templatecontext = [
     'searchformurl' => (new moodle_url('/local/mycoursesfilter/index.php'))->out(false),
     'searchhiddeninputs' => local_mycoursesfilter_build_hidden_inputs([
         'tag' => $tag,
-        'catid' => $catid,
+        'catid' => $normalisedcatid,
         'field' => $field,
         'value' => $fvalue,
-        'title' => $title,
         'filter' => $filter,
         'sort' => $sort,
         'dir' => $dir,
         'view' => $view,
+        'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
         'returnurl' => $returnurl,
-    ] + $scopeparams),
+        'courseid' => $explicitcourseid,
+        'only' => $only ? 1 : 0,
+        'recursive' => $recursive ? 1 : 0,
+    ]),
     'searchinputlabel' => get_string('searchbyname', 'local_mycoursesfilter'),
     'searchplaceholder' => get_string('search'),
     'searchquery' => $q,

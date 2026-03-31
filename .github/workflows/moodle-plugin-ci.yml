@@ -44,27 +44,35 @@ jobs:
           - php: "8.4"
             moodle-branch: MOODLE_501_STABLE
             database: pgsql
+            run-behat: true
           - php: "8.4"
             moodle-branch: MOODLE_501_STABLE
             database: mariadb
+            run-behat: true
           - php: "8.3"
             moodle-branch: MOODLE_500_STABLE
             database: pgsql
+            run-behat: true
           - php: "8.3"
             moodle-branch: MOODLE_500_STABLE
             database: mariadb
+            run-behat: true
           - php: "8.3"
             moodle-branch: MOODLE_405_STABLE
             database: pgsql
+            run-behat: true
           - php: "8.3"
             moodle-branch: MOODLE_405_STABLE
             database: mariadb
+            run-behat: true
           - php: "8.2"
             moodle-branch: MOODLE_405_STABLE
             database: pgsql
+            run-behat: true
           - php: "8.2"
             moodle-branch: MOODLE_405_STABLE
             database: mariadb
+            run-behat: true
 
     env:
       COMPOSER_PROCESS_TIMEOUT: 0
@@ -164,5 +172,5 @@ jobs:
         run: moodle-plugin-ci phpunit
 
       - name: Behat
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && matrix.run-behat }}
         run: moodle-plugin-ci behat --profile chrome

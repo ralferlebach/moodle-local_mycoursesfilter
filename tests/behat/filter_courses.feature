@@ -35,6 +35,21 @@ Feature: Filter the current user's course cards
     And I am on the local my courses filter page with return URL "/my/courses.php"
     Then I should see "Back"
 
+  Scenario: Allow overriding the page title from the URL
+    When I log in as "student1"
+    And I am on the local my courses filter page with the following parameters:
+      | name  | value                   |
+      | title | Custom filtered courses |
+    Then I should see "Custom filtered courses"
+
+  Scenario: Ignore an unsafe category selector without breaking the page
+    When I log in as "student1"
+    And I am on the local my courses filter page with the following parameters:
+      | name  | value      |
+      | catid | 1 OR 1=1   |
+    Then I should see "Biology 101"
+    And I should see "History 101"
+
   Scenario: Persist toolbar preferences between requests
     When I log in as "student1"
     And I am on the local my courses filter page with the following parameters:

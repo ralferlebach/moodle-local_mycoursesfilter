@@ -5,10 +5,10 @@
 
     Example context (json):
     {
-        "showbackbutton": true,
-        "backurl": "/course/view.php?id=2",
-        "backlabel": "Back",
         "sectiontitle": "Course overview",
+        "showbackbutton": true,
+        "backurl": "/my/courses.php",
+        "backlabel": "Back",
         "toolbararialabel": "Course overview controls",
         "groupingbuttonlabel": "All",
         "groupingarialabel": "Dropdown menu for the grouping",
@@ -17,19 +17,15 @@
         ],
         "searchformurl": "/local/mycoursesfilter/index.php",
         "searchhiddeninputs": [
-            {"name": "filter", "value": "all"}
+            {"name": "view", "value": "card"}
         ],
         "searchinputlabel": "Search by course name",
         "searchplaceholder": "Search",
         "searchquery": "Biology",
-        "sortingbuttonlabel": "Sorted by last accessed",
+        "sortingbuttonlabel": "Sorted by course name",
         "sortingarialabel": "Dropdown menu for the sorting",
         "sortingitems": [
-            {
-                "label": "Sorted by last accessed",
-                "url": "/local/mycoursesfilter/index.php?sort=lastaccess",
-                "active": true
-            }
+            {"label": "Sorted by course name", "url": "/local/mycoursesfilter/index.php?sort=alpha", "active": true}
         ],
         "displaybuttonlabel": "Card",
         "displayarialabel": "Dropdown menu for the display",
@@ -38,14 +34,14 @@
         ],
         "currentview": "card",
         "currentfilter": "all",
-        "currentsort": "lastaccess",
+        "currentsort": "alpha",
         "hascourses": true,
         "courseshtml": "<div>Rendered courses</div>",
         "nocoursefound": "No courses found."
     }
 }}
 <div class="local-mycoursesfilter-page">
-    <section class="local-mycoursesfilter block_myoverview block card mb-3" aria-labelledby="local-mycoursesfilter-blocktitle">
+    <div class="local-mycoursesfilter block_myoverview block card mb-3" aria-labelledby="local-mycoursesfilter-blocktitle">
         <div class="card-body p-3">
             <div class="d-flex align-items-center flex-wrap">
                 <h3 id="local-mycoursesfilter-blocktitle" class="h5 card-title d-inline mb-0">{{sectiontitle}}</h3>
@@ -133,5 +129,5 @@
                 </div>
             </div>
         </div>
-    </section>
+    </div>
 </div>

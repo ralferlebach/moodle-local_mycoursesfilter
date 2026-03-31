@@ -65,78 +65,155 @@ final class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Tests category matching.
+     * Tests category matching against multiple category ids.
      *
      * @return void
      */
-    public function test_match_category_checks_selected_categories(): void {
+    public function test_match_categories_checks_membership(): void {
         $course = (object)[
             'category' => 12,
         ];
 
-        $this->assertTrue(\local_mycoursesfilter_match_category($course, [], false));
-        $this->assertTrue(\local_mycoursesfilter_match_category($course, [12, 14], true));
-        $this->assertFalse(\local_mycoursesfilter_match_category($course, [99], true));
+        $this->assertTrue(\local_mycoursesfilter_match_categories($course, []));
+        $this->assertTrue(\local_mycoursesfilter_match_categories($course, [12, 99]));
+        $this->assertFalse(\local_mycoursesfilter_match_categories($course, [99]));
     }
 
     /**
-     * Tests recursive category id resolution.
+     * Tests category token parsing for ids and keywords.
      *
      * @return void
      */
-    public function test_resolve_category_ids_expands_descendants_when_recursive(): void {
+    public function test_parse_category_tokens_accepts_safe_values_only(): void {
+        $this->assertSame(
+            ['2', '3', 'this', 'parent', 'children'],
+            \local_mycoursesfilter_parse_category_tokens('2, 3, this, parent, children')
+        );
+        $this->assertSame([], \local_mycoursesfilter_parse_category_tokens('1 OR 1=1'));
+        $this->assertSame([], \local_mycoursesfilter_parse_category_tokens('../../etc/passwd'));
+    }
+
+    /**
+     * Tests the effective category scope resolution.
+     *
+     * @return void
+     */
+    public function test_resolve_category_scope_uses_switches_and_setting(): void {
         $this->resetAfterTest();
-        $this->setAdminUser();
 
-        $parent = $this->getDataGenerator()->create_category(['name' => 'Parent']);
-        $child = $this->getDataGenerator()->create_category(['name' => 'Child', 'parent' => $parent->id]);
-        $grandchild = $this->getDataGenerator()->create_category(['name' => 'Grandchild', 'parent' => $child->id]);
+        set_config('categoryscope', 'only', 'local_mycoursesfilter');
+        $this->assertSame('only', \local_mycoursesfilter_resolve_category_scope(false, false));
+        $this->assertSame('recursive', \local_mycoursesfilter_resolve_category_scope(false, true));
+        $this->assertSame('only', \local_mycoursesfilter_resolve_category_scope(true, true));
+    }
 
-        $resolved = \local_mycoursesfilter_resolve_category_ids((string)$parent->id, [], 'recursive');
+    /**
+     * Tests recursive category resolution for numeric ids.
+     *
+     * @return void
+     */
+    public function test_resolve_category_ids_handles_recursive_and_only_modes(): void {
+        $this->resetAfterTest();
 
-        $this->assertEqualsCanonicalizing([$parent->id, $child->id, $grandchild->id], $resolved);
-        $this->assertEqualsCanonicalizing(
-            [$parent->id],
-            \local_mycoursesfilter_resolve_category_ids((string)$parent->id, [], 'only')
+        $generator = $this->getDataGenerator();
+        $root = $generator->create_category(['name' => 'Root']);
+        $child = $generator->create_category(['name' => 'Child', 'parent' => $root->id]);
+        $grandchild = $generator->create_category(['name' => 'Grandchild', 'parent' => $child->id]);
+
+        $this->assertSame([$root->id], \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'only'));
+        $this->assertSame(
+            [$root->id, $child->id, $grandchild->id],
+            \local_mycoursesfilter_resolve_category_ids((string)$root->id, 'recursive')
         );
     }
 
     /**
-     * Tests keyword-based category resolution.
+     * Tests contextual category keywords.
      *
      * @return void
      */
-    public function test_resolve_category_ids_supports_this_parent_and_children_keywords(): void {
+    public function test_resolve_category_ids_supports_this_parent_and_children(): void {
         $this->resetAfterTest();
-        $this->setAdminUser();
 
-        $root = $this->getDataGenerator()->create_category(['name' => 'Root']);
-        $current = $this->getDataGenerator()->create_category(['name' => 'Current', 'parent' => $root->id]);
-        $childone = $this->getDataGenerator()->create_category(['name' => 'Child one', 'parent' => $current->id]);
-        $childtwo = $this->getDataGenerator()->create_category(['name' => 'Child two', 'parent' => $current->id]);
+        $generator = $this->getDataGenerator();
+        $root = $generator->create_category(['name' => 'Root']);
+        $child = $generator->create_category(['name' => 'Child', 'parent' => $root->id]);
+        $sibling = $generator->create_category(['name' => 'Sibling', 'parent' => $root->id]);
+        $grandchild = $generator->create_category(['name' => 'Grandchild', 'parent' => $child->id]);
+        $course = $generator->create_course(['category' => $child->id]);
 
-        $reference = [
-            'categoryid' => $current->id,
-            'parentid' => $root->id,
-        ];
-
-        $resolved = \local_mycoursesfilter_resolve_category_ids('this,parent,children', $reference, 'only');
-
-        $this->assertEqualsCanonicalizing([$current->id, $root->id, $childone->id, $childtwo->id], $resolved);
+        $this->assertSame([$child->id], \local_mycoursesfilter_resolve_category_ids('this', 'only', $course->id));
+        $this->assertSame([$grandchild->id], \local_mycoursesfilter_resolve_category_ids('children', 'only', $course->id));
+        $this->assertSame(
+            [$root->id, $child->id, $sibling->id, $grandchild->id],
+            \local_mycoursesfilter_resolve_category_ids('parent', 'recursive', $course->id)
+        );
     }
 
     /**
-     * Tests the special returnurl=this handling.
+     * Tests category parameter normalisation.
      *
      * @return void
      */
-    public function test_resolve_return_url_maps_this_to_referrer(): void {
+    public function test_normalise_category_ids_param_deduplicates_and_sorts(): void {
+        $this->assertSame('2,3,4', \local_mycoursesfilter_normalise_category_ids_param([4, 2, 3, 2]));
+        $this->assertSame('', \local_mycoursesfilter_normalise_category_ids_param([]));
+    }
+
+    /**
+     * Tests page title resolution with settings and override flag.
+     *
+     * @return void
+     */
+    public function test_resolve_page_title_uses_setting_and_override_flag(): void {
+        $this->resetAfterTest();
+
+        set_config('defaulttitle', 'Configured title', 'local_mycoursesfilter');
+        set_config('allowtitleoverride', 1, 'local_mycoursesfilter');
+        $this->assertSame('Configured title', \local_mycoursesfilter_resolve_page_title(''));
+        $this->assertSame('Runtime title', \local_mycoursesfilter_resolve_page_title('Runtime title'));
+
+        set_config('allowtitleoverride', 0, 'local_mycoursesfilter');
+        $this->assertSame('Configured title', \local_mycoursesfilter_resolve_page_title('Runtime title'));
+    }
+
+    /**
+     * Tests return URL resolution for explicit local URLs and the special this value.
+     *
+     * @return void
+     */
+    public function test_resolve_return_url_accepts_local_and_this_only(): void {
         global $CFG;
 
-        $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/view.php?id=77';
+        $this->resetAfterTest();
 
-        $this->assertSame('/course/view.php?id=77', \local_mycoursesfilter_resolve_return_url('this'));
+        $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/view.php?id=17';
+        $this->assertSame('/course/view.php?id=17', \local_mycoursesfilter_resolve_return_url('this'));
         $this->assertSame('/my/courses.php', \local_mycoursesfilter_resolve_return_url('/my/courses.php'));
+        $this->assertSame('', \local_mycoursesfilter_resolve_return_url('https://evil.example/'));
+    }
+
+    /**
+     * Tests source course resolution from an explicit course id.
+     *
+     * @return void
+     */
+    public function test_resolve_source_course_id_prefers_explicit_courseid(): void {
+        $this->assertSame(42, \local_mycoursesfilter_resolve_source_course_id(42));
+    }
+
+    /**
+     * Tests source course resolution from a local referrer.
+     *
+     * @return void
+     */
+    public function test_resolve_source_course_id_reads_local_referrer(): void {
+        global $CFG;
+
+        $this->resetAfterTest();
+
+        $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/view.php?id=77';
+        $this->assertSame(77, \local_mycoursesfilter_resolve_source_course_id());
     }
 
     /**

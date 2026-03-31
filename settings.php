@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Settings for local_mycoursesfilter.
+ * Plugin settings for local_mycoursesfilter.
  *
  * @package    local_mycoursesfilter
  * @copyright  2026 Ralf Erlebach <moodle-dev@ralferlebach.de>
@@ -25,13 +25,35 @@
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
-    require_once(__DIR__ . '/lib.php');
+    $settings = new admin_settingpage('local_mycoursesfilter', get_string('pluginname', 'local_mycoursesfilter'));
 
-    $settings->add(new admin_setting_configselect(
-        'local_mycoursesfilter/defaultcategoryscope',
-        get_string('defaultcategoryscope', 'local_mycoursesfilter'),
-        get_string('defaultcategoryscope_desc', 'local_mycoursesfilter'),
-        'recursive',
-        local_mycoursesfilter_get_category_scope_options()
-    ));
+    if ($ADMIN->fulltree) {
+        $settings->add(new admin_setting_configselect(
+            'local_mycoursesfilter/categoryscope',
+            get_string('categoryscope', 'local_mycoursesfilter'),
+            get_string('categoryscope_desc', 'local_mycoursesfilter'),
+            'recursive',
+            [
+                'recursive' => get_string('categoryscope_recursive', 'local_mycoursesfilter'),
+                'only' => get_string('categoryscope_only', 'local_mycoursesfilter'),
+            ]
+        ));
+
+        $settings->add(new admin_setting_configtext(
+            'local_mycoursesfilter/defaulttitle',
+            get_string('defaulttitle', 'local_mycoursesfilter'),
+            get_string('defaulttitle_desc', 'local_mycoursesfilter'),
+            '',
+            PARAM_TEXT
+        ));
+
+        $settings->add(new admin_setting_configcheckbox(
+            'local_mycoursesfilter/allowtitleoverride',
+            get_string('allowtitleoverride', 'local_mycoursesfilter'),
+            get_string('allowtitleoverride_desc', 'local_mycoursesfilter'),
+            1
+        ));
+    }
+
+    $ADMIN->add('localplugins', $settings);
 }
