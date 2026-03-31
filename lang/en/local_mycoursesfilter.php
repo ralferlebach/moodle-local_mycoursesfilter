@@ -25,12 +25,12 @@
 $string['courseoverview'] = 'Course overview';
 $string['displayarialabel'] = 'Dropdown menu for the display';
 $string['filter_all'] = 'All';
-$string['filteredcourses'] = 'Filtered courses: {$a}';
 $string['filter_completed'] = 'Completed';
 $string['filter_favourites'] = 'Favourites';
 $string['filter_hidden'] = 'Removed from view';
 $string['filter_inprogress'] = 'In progress';
 $string['filter_notstarted'] = 'Not started';
+$string['filteredcourses'] = 'Filtered courses: {$a}';
 $string['groupingarialabel'] = 'Dropdown menu for the grouping';
 $string['nocoursefound'] = 'No courses found.';
 $string['pagetitle'] = 'My courses (filtered)';

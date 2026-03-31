@@ -25,12 +25,12 @@
 $string['courseoverview'] = 'Kursübersicht';
 $string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
 $string['filter_all'] = 'Alle';
-$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['filter_completed'] = 'Abgeschlossen';
 $string['filter_favourites'] = 'Favoriten';
 $string['filter_hidden'] = 'Aus Ansicht entfernte';
 $string['filter_inprogress'] = 'In Bearbeitung';
 $string['filter_notstarted'] = 'Noch nicht begonnen';
+$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
 $string['groupingarialabel'] = 'Dropdown-Menü für die Gruppierung';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
