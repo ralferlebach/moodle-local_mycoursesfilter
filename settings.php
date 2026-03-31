@@ -29,6 +29,17 @@ if ($hassiteconfig) {
 
     if ($ADMIN->fulltree) {
         $settings->add(new admin_setting_configselect(
+            'local_mycoursesfilter/persisttoolbar',
+            get_string('persisttoolbar', 'local_mycoursesfilter'),
+            get_string('persisttoolbar_desc', 'local_mycoursesfilter'),
+            'none',
+            [
+                'none' => get_string('persisttoolbar_none', 'local_mycoursesfilter'),
+                'core' => get_string('persisttoolbar_core', 'local_mycoursesfilter'),
+            ]
+        ));
+
+        $settings->add(new admin_setting_configselect(
             'local_mycoursesfilter/categoryscope',
             get_string('categoryscope', 'local_mycoursesfilter'),
             get_string('categoryscope_desc', 'local_mycoursesfilter'),

@@ -17,7 +17,7 @@ Feature: Filter the current user's course cards
       | student1 | BIO101 | student |
       | student1 | HIS101 | student |
 
-  Scenario: Filter courses by name query
+  Scenario: Filter courses by course name query
     When I log in as "student1"
     And I am on the local my courses filter page with query "Biology"
     Then I should see "Biology 101"
@@ -50,14 +50,15 @@ Feature: Filter the current user's course cards
     Then I should see "Biology 101"
     And I should see "History 101"
 
-  Scenario: Persist toolbar preferences between requests
+  Scenario: Do not persist toolbar preferences by default
     When I log in as "student1"
     And I am on the local my courses filter page with the following parameters:
-      | name   | value   |
-      | filter | hidden  |
-      | sort   | alpha   |
-      | view   | list    |
+      | name      | value      |
+      | filter    | hidden     |
+      | sort      | coursename |
+      | view      | list       |
+      | sortorder | asc        |
     And I am on the local my courses filter page
-    Then I should see "No courses found."
-    And I should see "Sorted by course name"
-    And I should see "List"
+    Then I should see "Biology 101"
+    And I should see "Sorted by last accessed"
+    And I should see "Card"

@@ -27,11 +27,109 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/completionlib.php');
 
 /**
- * Resolves a persisted toolbar preference.
+ * Returns the configured toolbar persistence mode.
  *
- * Request parameters override stored preferences and are persisted immediately.
+ * @return string
+ */
+function local_mycoursesfilter_get_toolbar_persistence_mode(): string {
+    $mode = (string)get_config('local_mycoursesfilter', 'persisttoolbar');
+    if (!in_array($mode, ['none', 'core'], true)) {
+        $mode = 'none';
+    }
+
+    return $mode;
+}
+
+/**
+ * Returns the core my/courses preference name for a toolbar control.
  *
- * @param string $name The request parameter and preference suffix.
+ * @param string $name Toolbar control name.
+ * @return string
+ */
+function local_mycoursesfilter_get_core_toolbar_preference_name(string $name): string {
+    $mapping = [
+        'filter' => 'block_myoverview_user_grouping_preference',
+        'sort' => 'block_myoverview_user_sort_preference',
+        'view' => 'block_myoverview_user_view_preference',
+    ];
+
+    return $mapping[$name] ?? '';
+}
+
+/**
+ * Maps a plugin toolbar value to the equivalent core my/courses value.
+ *
+ * Returns an empty string when no safe mapping exists.
+ *
+ * @param string $name Toolbar control name.
+ * @param string $value Plugin toolbar value.
+ * @return string
+ */
+function local_mycoursesfilter_map_toolbar_value_to_core(string $name, string $value): string {
+    $mapping = [
+        'filter' => [
+            'all' => 'all',
+            'inprogress' => 'inprogress',
+            'favourites' => 'favourites',
+            'hidden' => 'hidden',
+        ],
+        'sort' => [
+            'lastaccess' => 'lastaccessed',
+            'coursename' => 'title',
+            'shortname' => 'shortname',
+        ],
+        'view' => [
+            'card' => 'card',
+            'list' => 'list',
+            'summary' => 'summary',
+        ],
+    ];
+
+    return $mapping[$name][$value] ?? '';
+}
+
+/**
+ * Maps a core my/courses preference value to the equivalent plugin value.
+ *
+ * Unsupported values fall back to the supplied default.
+ *
+ * @param string $name Toolbar control name.
+ * @param string $value Core preference value.
+ * @param string $default Default plugin value.
+ * @return string
+ */
+function local_mycoursesfilter_map_toolbar_value_from_core(string $name, string $value, string $default): string {
+    $mapping = [
+        'filter' => [
+            'all' => 'all',
+            'allincludinghidden' => 'all',
+            'inprogress' => 'inprogress',
+            'favourites' => 'favourites',
+            'hidden' => 'hidden',
+        ],
+        'sort' => [
+            'lastaccessed' => 'lastaccess',
+            'title' => 'coursename',
+            'shortname' => 'shortname',
+        ],
+        'view' => [
+            'card' => 'card',
+            'list' => 'list',
+            'summary' => 'summary',
+        ],
+    ];
+
+    return $mapping[$name][$value] ?? $default;
+}
+
+/**
+ * Resolves a toolbar preference.
+ *
+ * Request parameters override the current effective value. When toolbar persistence is
+ * enabled, compatible values are stored via core my/courses preferences instead of
+ * plugin-owned preferences.
+ *
+ * @param string $name The request parameter name.
  * @param string $default The default value.
  * @param string $paramtype The Moodle PARAM_* type.
  * @param string[] $allowed Allowed values.
@@ -45,26 +143,39 @@ function local_mycoursesfilter_resolve_toolbar_preference(
 ): string {
     global $USER;
 
-    $prefname = 'local_mycoursesfilter_' . $name;
     $sentinel = '__local_mycoursesfilter_missing__';
     $requestvalue = optional_param($name, $sentinel, $paramtype);
     $hasrequestvalue = ($requestvalue !== $sentinel);
 
     if ($hasrequestvalue) {
         $value = $requestvalue;
-    } else {
-        $value = get_user_preferences($prefname, $default, $USER->id);
+        if (!in_array($value, $allowed, true)) {
+            return $default;
+        }
+
+        if (local_mycoursesfilter_get_toolbar_persistence_mode() === 'core') {
+            $coreprefname = local_mycoursesfilter_get_core_toolbar_preference_name($name);
+            $corevalue = local_mycoursesfilter_map_toolbar_value_to_core($name, $value);
+            if ($coreprefname !== '' && $corevalue !== '') {
+                set_user_preference($coreprefname, $corevalue, $USER->id);
+            }
+        }
+
+        return $value;
     }
 
-    if (!in_array($value, $allowed, true)) {
-        $value = $default;
+    if (local_mycoursesfilter_get_toolbar_persistence_mode() === 'core') {
+        $coreprefname = local_mycoursesfilter_get_core_toolbar_preference_name($name);
+        if ($coreprefname !== '') {
+            $storedvalue = (string)get_user_preferences($coreprefname, '', $USER->id);
+            $value = local_mycoursesfilter_map_toolbar_value_from_core($name, $storedvalue, $default);
+            if (in_array($value, $allowed, true)) {
+                return $value;
+            }
+        }
     }
 
-    if ($hasrequestvalue) {
-        set_user_preference($prefname, $value, $USER->id);
-    }
-
-    return $value;
+    return $default;
 }
 
 /**
@@ -557,6 +668,43 @@ function local_mycoursesfilter_get_filter_labels(): array {
 }
 
 /**
+ * Ensures that the current user has at least one of the supplied course roles.
+ *
+ * @param string[] $roleshortnames The role shortnames to accept.
+ * @return void
+ * @throws moodle_exception If the current user does not match the required roles.
+ */
+function local_mycoursesfilter_require_any_course_role(array $roleshortnames): void {
+    global $DB, $USER;
+
+    if (is_siteadmin($USER)) {
+        return;
+    }
+
+    if (empty($roleshortnames)) {
+        return;
+    }
+
+    [$insql, $inparams] = $DB->get_in_or_equal($roleshortnames, SQL_PARAMS_NAMED, 'role');
+    $params = $inparams + [
+        'userid' => $USER->id,
+        'contextlevel' => CONTEXT_COURSE,
+    ];
+
+    $sql = "SELECT 1
+              FROM {role_assignments} ra
+              JOIN {context} ctx ON ctx.id = ra.contextid
+              JOIN {role} r ON r.id = ra.roleid
+             WHERE ra.userid = :userid
+               AND ctx.contextlevel = :contextlevel
+               AND r.shortname {$insql}";
+
+    if (!$DB->record_exists_sql($sql, $params)) {
+        throw new moodle_exception('nopermissions', 'error', '', get_string('pluginname', 'local_mycoursesfilter'));
+    }
+}
+
+/**
  * Fetches metadata required for filtering and sorting the selected courses.
  *
  * @param int[] $courseids Course ids.
@@ -701,13 +849,64 @@ function local_mycoursesfilter_match_tag(int $courseid, string $tag): bool {
 }
 
 /**
+ * Parses the combined customfield parameter.
+ *
+ * Supported forms are "shortname" and "shortname:value fragment".
+ *
+ * @param string $rawcustomfield Raw customfield parameter.
+ * @return array{shortname: string, value: string}
+ */
+function local_mycoursesfilter_parse_customfield_param(string $rawcustomfield): array {
+    $rawcustomfield = trim($rawcustomfield);
+    if ($rawcustomfield === '') {
+        return ['shortname' => '', 'value' => ''];
+    }
+
+    $parts = explode(':', $rawcustomfield, 2);
+    $shortname = clean_param(trim($parts[0] ?? ''), PARAM_ALPHANUMEXT);
+    if ($shortname === '') {
+        return ['shortname' => '', 'value' => ''];
+    }
+
+    $value = '';
+    if (array_key_exists(1, $parts)) {
+        $value = clean_param(trim((string)$parts[1]), PARAM_TEXT);
+    }
+
+    return ['shortname' => $shortname, 'value' => $value];
+}
+
+/**
+ * Builds a stable customfield request parameter.
+ *
+ * @param string $shortname The custom field shortname.
+ * @param string $value The expected value fragment.
+ * @return string
+ */
+function local_mycoursesfilter_build_customfield_param(string $shortname, string $value): string {
+    $shortname = clean_param(trim($shortname), PARAM_ALPHANUMEXT);
+    $value = clean_param(trim($value), PARAM_TEXT);
+
+    if ($shortname === '') {
+        return '';
+    }
+
+    if ($value === '') {
+        return $shortname;
+    }
+
+    return $shortname . ':' . $value;
+}
+
+/**
  * Checks whether the course matches the selected custom field value.
  *
  * If the expected value is empty, any non-empty custom field value is accepted.
+ * Otherwise the comparison uses a case-insensitive partial match.
  *
  * @param int $courseid The course id.
  * @param string $fieldshortname The custom field shortname.
- * @param string $expectedvalue The expected value.
+ * @param string $expectedvalue The expected value fragment.
  * @return bool
  */
 function local_mycoursesfilter_match_customfield(int $courseid, string $fieldshortname, string $expectedvalue): bool {
@@ -735,11 +934,15 @@ function local_mycoursesfilter_match_customfield(int $courseid, string $fieldsho
             $actualvalue = (string)$actualvalue;
         }
 
+        $actualvalue = trim($actualvalue);
         if ($expectedvalue === '') {
-            return trim($actualvalue) !== '';
+            return $actualvalue !== '';
         }
 
-        return core_text::strtolower(trim($actualvalue)) === core_text::strtolower(trim($expectedvalue));
+        return core_text::strpos(
+            core_text::strtolower($actualvalue),
+            core_text::strtolower(trim($expectedvalue))
+        ) !== false;
     }
 
     return false;
@@ -747,6 +950,7 @@ function local_mycoursesfilter_match_customfield(int $courseid, string $fieldsho
 
 /**
  * Checks whether the course matches the selected filter bucket.
+ *
  *
  * @param array|null $meta The metadata for the course.
  * @param string $filter The selected filter.
@@ -784,7 +988,7 @@ function local_mycoursesfilter_match_filter(?array $meta, string $filter): bool 
  * @return bool
  */
 function local_mycoursesfilter_match_status(?array $meta, string $status): bool {
-    if ($status === 'all' || $status === 'any') {
+    if ($status === 'all') {
         return true;
     }
 
@@ -879,7 +1083,7 @@ function local_mycoursesfilter_match_inprogress_status(array $meta): bool {
  * @param string $paramname Parameter name to write.
  * @param string $currentvalue Current selected value.
  * @param array $baseparams The base URL parameters.
- * @return array
+ * @return array<int, array<string, bool|string>>
  */
 function local_mycoursesfilter_build_dropdown_items(
     array $options,
@@ -971,10 +1175,24 @@ function local_mycoursesfilter_build_reset_url(array $params): moodle_url {
 function local_mycoursesfilter_get_sort_labels(): array {
     return [
         'lastaccess' => get_string('sort_lastaccess', 'local_mycoursesfilter'),
-        'alpha' => get_string('sort_alpha', 'local_mycoursesfilter'),
+        'coursename' => get_string('sort_coursename', 'local_mycoursesfilter'),
         'shortname' => get_string('sort_shortname', 'local_mycoursesfilter'),
         'lastenrolled' => get_string('sort_lastenrolled', 'local_mycoursesfilter'),
     ];
+}
+
+/**
+ * Returns the default sort order for the selected sort mode.
+ *
+ * @param string $sort The selected sort mode.
+ * @return string
+ */
+function local_mycoursesfilter_get_default_sortorder(string $sort): string {
+    if (in_array($sort, ['coursename', 'shortname'], true)) {
+        return 'asc';
+    }
+
+    return 'desc';
 }
 
 /**

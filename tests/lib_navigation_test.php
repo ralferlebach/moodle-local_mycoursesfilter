@@ -177,4 +177,42 @@ final class lib_navigation_test extends \advanced_testcase {
         $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/view.php?id=77';
         $this->assertSame(77, \local_mycoursesfilter_resolve_source_course_id());
     }
+
+    /**
+     * Tests toolbar persistence mode and compatible core mappings.
+     *
+     * @return void
+     */
+    public function test_toolbar_persistence_mode_and_core_mappings(): void {
+        $this->resetAfterTest();
+
+        $this->assertSame('none', \local_mycoursesfilter_get_toolbar_persistence_mode());
+        set_config('persisttoolbar', 'core', 'local_mycoursesfilter');
+        $this->assertSame('core', \local_mycoursesfilter_get_toolbar_persistence_mode());
+
+        $this->assertSame('title', \local_mycoursesfilter_map_toolbar_value_to_core('sort', 'coursename'));
+        $this->assertSame('coursename', \local_mycoursesfilter_map_toolbar_value_from_core('sort', 'title', 'lastaccess'));
+        $this->assertSame('', \local_mycoursesfilter_map_toolbar_value_to_core('filter', 'completed'));
+        $this->assertSame('all', \local_mycoursesfilter_map_toolbar_value_from_core('filter', 'future', 'all'));
+    }
+
+    /**
+     * Tests the combined custom field parameter helpers and default sort order logic.
+     *
+     * @return void
+     */
+    public function test_customfield_helpers_and_default_sortorder(): void {
+        $this->assertSame(
+            ['shortname' => 'department', 'value' => 'bio'],
+            \local_mycoursesfilter_parse_customfield_param('department:bio')
+        );
+        $this->assertSame(
+            ['shortname' => 'department', 'value' => ''],
+            \local_mycoursesfilter_parse_customfield_param('department')
+        );
+        $this->assertSame('department:bio', \local_mycoursesfilter_build_customfield_param('department', 'bio'));
+        $this->assertSame('department', \local_mycoursesfilter_build_customfield_param('department', ''));
+        $this->assertSame('asc', \local_mycoursesfilter_get_default_sortorder('coursename'));
+        $this->assertSame('desc', \local_mycoursesfilter_get_default_sortorder('lastaccess'));
+    }
 }

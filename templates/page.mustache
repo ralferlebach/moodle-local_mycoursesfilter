@@ -25,7 +25,7 @@
         "sortingbuttonlabel": "Sorted by course name",
         "sortingarialabel": "Dropdown menu for the sorting",
         "sortingitems": [
-            {"label": "Sorted by course name", "url": "/local/mycoursesfilter/index.php?sort=alpha", "active": true}
+            {"label": "Sorted by course name", "url": "/local/mycoursesfilter/index.php?sort=coursename", "active": true}
         ],
         "displaybuttonlabel": "Card",
         "displayarialabel": "Dropdown menu for the display",
@@ -34,7 +34,7 @@
         ],
         "currentview": "card",
         "currentfilter": "all",
-        "currentsort": "alpha",
+        "currentsort": "coursename",
         "hascourses": true,
         "courseshtml": "<div>Rendered courses</div>",
         "nocoursefound": "No courses found."
@@ -78,7 +78,7 @@
                                         <label for="local-mycoursesfilter-searchinput">
                                             <span class="sr-only">{{searchinputlabel}}</span>
                                         </label>
-                                        <input type="text" id="local-mycoursesfilter-searchinput" data-region="input" data-action="search" class="form-control withclear rounded" placeholder="{{searchplaceholder}}" name="q" value="{{searchquery}}" autocomplete="off">
+                                        <input type="text" id="local-mycoursesfilter-searchinput" data-region="input" data-action="search" class="form-control withclear rounded" placeholder="{{searchplaceholder}}" name="coursename" value="{{searchquery}}" autocomplete="off">
                                     </div>
                                 </form>
                             </div>

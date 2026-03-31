@@ -46,7 +46,7 @@ class behat_mycoursesfilter extends behat_base {
     public function i_am_on_the_local_my_courses_filter_page(?string $query = ''): void {
         $params = [];
         if ($query !== null && $query !== '') {
-            $params['q'] = $query;
+            $params['coursename'] = $query;
         }
 
         $this->visit_filter_page($params);
@@ -62,26 +62,6 @@ class behat_mycoursesfilter extends behat_base {
     public function i_am_on_the_local_my_courses_filter_page_with_return_url(string $returnurl): void {
         $this->visit_filter_page(['returnurl' => $returnurl]);
     }
-
-    /**
-     * Opens the local my courses filter page with query and return URL.
-     *
-     * @When /^I am on the local my courses filter page with query "([^"]*)" and return URL "([^"]*)"$/
-     * @param string $query The course search query.
-     * @param string $returnurl The return URL.
-     * @return void
-     */
-    public function i_am_on_the_local_my_courses_filter_page_with_query_and_return_url(
-        string $query,
-        string $returnurl
-    ): void {
-        $this->visit_filter_page([
-            'q' => $query,
-            'returnurl' => $returnurl,
-        ]);
-    }
-
-
 
     /**
      * Opens the local my courses filter page with arbitrary parameters.
@@ -105,7 +85,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Visits the filter page with the supplied parameters.
      *
-     * @param array $params The URL parameters.
+     * @param array<string, string|int> $params The URL parameters.
      * @return void
      */
     protected function visit_filter_page(array $params): void {
