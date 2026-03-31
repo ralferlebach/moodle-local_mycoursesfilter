@@ -23,8 +23,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-require_once(dirname(__DIR__, 4) . '/lib/behat/behat_base.php');
-require_once(dirname(__DIR__, 4) . '/lib/behat/behat_forms.php');
+require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
 use Behat\Gherkin\Node\TableNode;
 
