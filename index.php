@@ -30,11 +30,20 @@ require_login();
 
 $q = optional_param('q', '', PARAM_TEXT);
 $tag = optional_param('tag', '', PARAM_TEXT);
-$catid = optional_param('catid', 0, PARAM_INT);
+$catidraw = optional_param('catid', '', PARAM_RAW_TRIMMED);
 $field = optional_param('field', '', PARAM_ALPHANUMEXT);
 $fvalue = optional_param('value', '', PARAM_TEXT);
-$returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+$title = optional_param('title', '', PARAM_TEXT);
+$returnurlraw = optional_param('returnurl', '', PARAM_RAW_TRIMMED);
 $legacyfilter = optional_param('status', '', PARAM_ALPHA);
+
+$categoryscope = local_mycoursesfilter_resolve_category_scope();
+$referrercontext = local_mycoursesfilter_get_referrer_category_context();
+$categoryfilteractive = trim($catidraw) !== '';
+$categoryids = local_mycoursesfilter_resolve_category_ids($catidraw, $referrercontext, $categoryscope);
+$catid = local_mycoursesfilter_get_category_param_value($categoryids, $categoryfilteractive);
+$returnurl = local_mycoursesfilter_resolve_return_url($returnurlraw);
+$pagetitle = trim($title) !== '' ? trim($title) : get_string('pagetitle', 'local_mycoursesfilter');
 
 $filterlabels = local_mycoursesfilter_get_filter_labels();
 $sortlabels = local_mycoursesfilter_get_sort_labels();
@@ -61,17 +70,19 @@ if ($filter === 'any') {
 
 local_mycoursesfilter_require_any_course_role(['student']);
 
+$scopeparams = local_mycoursesfilter_get_category_scope_params($categoryscope);
 $pageparams = [
     'q' => $q,
     'tag' => $tag,
     'catid' => $catid,
     'field' => $field,
     'value' => $fvalue,
+    'title' => $title,
     'filter' => $filter,
     'sort' => $sort,
     'dir' => $dir,
     'view' => $view,
-];
+] + $scopeparams;
 if ($returnurl !== '') {
     $pageparams['returnurl'] = $returnurl;
 }
@@ -83,8 +94,8 @@ $PAGE->set_context(context_system::instance());
 $PAGE->add_body_classes(['limitedwidth', 'page-mycourses']);
 $PAGE->set_pagelayout('mycourses');
 $PAGE->set_pagetype('my-index');
-$PAGE->set_title(get_string('pagetitle', 'local_mycoursesfilter'));
-$PAGE->set_heading(get_string('pagetitle', 'local_mycoursesfilter'));
+$PAGE->set_title($pagetitle);
+$PAGE->set_heading($pagetitle);
 $PAGE->requires->css(new moodle_url('/local/mycoursesfilter/styles.css'));
 
 $fields = 'id, fullname, shortname, category, visible, summary, summaryformat, idnumber';
@@ -97,7 +108,7 @@ foreach ($courses as $course) {
     if (!local_mycoursesfilter_match_name($course, $q)) {
         continue;
     }
-    if (!local_mycoursesfilter_match_category($course, $catid)) {
+    if (!local_mycoursesfilter_match_category($course, $categoryids, $categoryfilteractive)) {
         continue;
     }
     if ($tag !== '' && !local_mycoursesfilter_match_tag((int)$course->id, $tag)) {
@@ -160,15 +171,15 @@ $toolbarparams = [
     'catid' => $catid,
     'field' => $field,
     'value' => $fvalue,
+    'title' => $title,
     'filter' => $filter,
     'sort' => $sort,
     'dir' => $dir,
     'view' => $view,
     'returnurl' => $returnurl,
-];
+] + $scopeparams;
 
 $templatecontext = [
-    'pageheading' => get_string('pagetitle', 'local_mycoursesfilter'),
     'showbackbutton' => $returnurl !== '',
     'backurl' => $returnurl,
     'backlabel' => get_string('back'),
@@ -191,12 +202,13 @@ $templatecontext = [
         'catid' => $catid,
         'field' => $field,
         'value' => $fvalue,
+        'title' => $title,
         'filter' => $filter,
         'sort' => $sort,
         'dir' => $dir,
         'view' => $view,
         'returnurl' => $returnurl,
-    ]),
+    ] + $scopeparams),
     'searchinputlabel' => get_string('searchbyname', 'local_mycoursesfilter'),
     'searchplaceholder' => get_string('search'),
     'searchquery' => $q,

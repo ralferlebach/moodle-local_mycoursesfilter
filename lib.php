@@ -65,6 +65,327 @@ function local_mycoursesfilter_resolve_toolbar_preference(
     return $value;
 }
 
+
+/**
+ * Returns the available category scope options.
+ *
+ * @return array<string, string>
+ */
+function local_mycoursesfilter_get_category_scope_options(): array {
+    return [
+        'recursive' => get_string('categoryscope_recursive', 'local_mycoursesfilter'),
+        'only' => get_string('categoryscope_only', 'local_mycoursesfilter'),
+    ];
+}
+
+/**
+ * Returns the configured default category scope.
+ *
+ * @return string
+ */
+function local_mycoursesfilter_get_default_category_scope(): string {
+    $defaultscope = (string)get_config('local_mycoursesfilter', 'defaultcategoryscope');
+    $allowed = array_keys(local_mycoursesfilter_get_category_scope_options());
+
+    if (!in_array($defaultscope, $allowed, true)) {
+        $defaultscope = 'recursive';
+    }
+
+    return $defaultscope;
+}
+
+/**
+ * Resolves the active category scope.
+ *
+ * The scope can be forced through the query parameters only=1 or recursive=1.
+ * Recursive takes precedence when both switches are supplied.
+ *
+ * @return string
+ */
+function local_mycoursesfilter_resolve_category_scope(): string {
+    $defaultscope = local_mycoursesfilter_get_default_category_scope();
+    $scope = $defaultscope;
+    $scopeparam = optional_param('scope', '', PARAM_ALPHA);
+    $only = optional_param('only', 0, PARAM_BOOL);
+    $recursive = optional_param('recursive', 0, PARAM_BOOL);
+
+    if ($scopeparam === 'only' || $only) {
+        $scope = 'only';
+    }
+
+    if ($scopeparam === 'recursive' || $recursive) {
+        $scope = 'recursive';
+    }
+
+    return $scope;
+}
+
+/**
+ * Returns the parameters needed to preserve a category scope.
+ *
+ * @param string $scope The current category scope.
+ * @return array<string, int>
+ */
+function local_mycoursesfilter_get_category_scope_params(string $scope): array {
+    $params = [];
+    $defaultscope = local_mycoursesfilter_get_default_category_scope();
+
+    if ($scope === 'only' && $defaultscope !== 'only') {
+        $params['only'] = 1;
+    }
+
+    if ($scope === 'recursive' && $defaultscope !== 'recursive') {
+        $params['recursive'] = 1;
+    }
+
+    return $params;
+}
+
+/**
+ * Returns the current local referrer URL.
+ *
+ * @return string
+ */
+function local_mycoursesfilter_get_local_referrer_url(): string {
+    global $CFG;
+
+    if (empty($_SERVER['HTTP_REFERER']) || !is_string($_SERVER['HTTP_REFERER'])) {
+        return '';
+    }
+
+    $referrer = trim($_SERVER['HTTP_REFERER']);
+    if ($referrer === '' || strpos($referrer, $CFG->wwwroot) !== 0) {
+        return '';
+    }
+
+    $localurl = substr($referrer, strlen($CFG->wwwroot));
+    if ($localurl === '' || $localurl[0] !== '/') {
+        return '';
+    }
+
+    return clean_param($localurl, PARAM_LOCALURL);
+}
+
+/**
+ * Resolves the requested return URL.
+ *
+ * The special value "this" is mapped to the local HTTP referrer.
+ *
+ * @param string $returnurl The raw return URL parameter.
+ * @return string
+ */
+function local_mycoursesfilter_resolve_return_url(string $returnurl): string {
+    if ($returnurl === 'this') {
+        return local_mycoursesfilter_get_local_referrer_url();
+    }
+
+    return clean_param($returnurl, PARAM_LOCALURL);
+}
+
+/**
+ * Resolves the category context from the local referrer.
+ *
+ * @return array<string, int>
+ */
+function local_mycoursesfilter_get_referrer_category_context(): array {
+    global $DB;
+
+    $context = [
+        'courseid' => 0,
+        'categoryid' => 0,
+        'parentid' => 0,
+    ];
+
+    $referrer = local_mycoursesfilter_get_local_referrer_url();
+    if ($referrer === '') {
+        return $context;
+    }
+
+    $parts = parse_url($referrer);
+    $path = $parts['path'] ?? '';
+    $params = [];
+    if (!empty($parts['query'])) {
+        parse_str($parts['query'], $params);
+    }
+
+    $courseid = 0;
+    $categoryid = 0;
+
+    if ($path === '/course/view.php' && !empty($params['id']) && ctype_digit((string)$params['id'])) {
+        $courseid = (int)$params['id'];
+    } else if ($path === '/course/index.php' && !empty($params['categoryid']) && ctype_digit((string)$params['categoryid'])) {
+        $categoryid = (int)$params['categoryid'];
+    } else if (!empty($params['courseid']) && ctype_digit((string)$params['courseid'])) {
+        $courseid = (int)$params['courseid'];
+    } else if (!empty($params['categoryid']) && ctype_digit((string)$params['categoryid'])) {
+        $categoryid = (int)$params['categoryid'];
+    } else if (strpos($path, '/mod/') === 0 && !empty($params['id']) && ctype_digit((string)$params['id'])) {
+        $courseid = (int)$DB->get_field('course_modules', 'course', ['id' => (int)$params['id']]);
+    }
+
+    if ($courseid > 0) {
+        $record = $DB->get_record('course', ['id' => $courseid], 'id, category', IGNORE_MISSING);
+        if ($record) {
+            $context['courseid'] = (int)$record->id;
+            $context['categoryid'] = (int)$record->category;
+        }
+    } else if ($categoryid > 0) {
+        $context['categoryid'] = $categoryid;
+    }
+
+    if ($context['categoryid'] > 0) {
+        $context['parentid'] = (int)$DB->get_field(
+            'course_categories',
+            'parent',
+            ['id' => $context['categoryid']]
+        );
+    }
+
+    return $context;
+}
+
+/**
+ * Normalises category ids.
+ *
+ * @param int[] $categoryids The category ids to normalise.
+ * @return int[]
+ */
+function local_mycoursesfilter_normalise_category_ids(array $categoryids): array {
+    $normalised = [];
+
+    foreach ($categoryids as $categoryid) {
+        $categoryid = (int)$categoryid;
+        if ($categoryid > 0) {
+            $normalised[$categoryid] = $categoryid;
+        }
+    }
+
+    return array_values($normalised);
+}
+
+/**
+ * Returns the direct child categories of a given category.
+ *
+ * @param int $categoryid The parent category id.
+ * @return int[]
+ */
+function local_mycoursesfilter_get_direct_child_category_ids(int $categoryid): array {
+    global $DB;
+
+    if ($categoryid <= 0) {
+        return [];
+    }
+
+    return array_map(
+        'intval',
+        array_values($DB->get_records_menu('course_categories', ['parent' => $categoryid], '', 'id, id'))
+    );
+}
+
+/**
+ * Returns a category id list including all descendants.
+ *
+ * @param int[] $categoryids Category ids to expand.
+ * @return int[]
+ */
+function local_mycoursesfilter_expand_category_ids(array $categoryids): array {
+    $expanded = [];
+    $queue = local_mycoursesfilter_normalise_category_ids($categoryids);
+
+    while (!empty($queue)) {
+        $categoryid = array_shift($queue);
+        if (isset($expanded[$categoryid])) {
+            continue;
+        }
+
+        $expanded[$categoryid] = $categoryid;
+        foreach (local_mycoursesfilter_get_direct_child_category_ids($categoryid) as $childid) {
+            if (!isset($expanded[$childid])) {
+                $queue[] = $childid;
+            }
+        }
+    }
+
+    return array_values($expanded);
+}
+
+/**
+ * Resolves the catid parameter to explicit category ids.
+ *
+ * Supported values are comma-separated category ids and the keywords this,
+ * parent and children. When recursive mode is active, all descendants of the
+ * selected categories are included automatically.
+ *
+ * @param string $rawvalue The raw catid parameter.
+ * @param array<string, int> $reference The referrer category context.
+ * @param string $scope The category scope.
+ * @return int[]
+ */
+function local_mycoursesfilter_resolve_category_ids(string $rawvalue, array $reference, string $scope): array {
+    $rawvalue = trim($rawvalue);
+    if ($rawvalue === '') {
+        return [];
+    }
+
+    $categoryids = [];
+    $thiscategoryid = (int)($reference['categoryid'] ?? 0);
+    $parentid = (int)($reference['parentid'] ?? 0);
+    $tokens = preg_split('/\s*,\s*/', $rawvalue, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+    foreach ($tokens as $token) {
+        $tokennormalised = core_text::strtolower(trim($token));
+
+        if (ctype_digit($tokennormalised)) {
+            $categoryids[] = (int)$tokennormalised;
+            continue;
+        }
+
+        if ($tokennormalised === 'this' && $thiscategoryid > 0) {
+            $categoryids[] = $thiscategoryid;
+            continue;
+        }
+
+        if ($tokennormalised === 'parent' && $parentid > 0) {
+            $categoryids[] = $parentid;
+            continue;
+        }
+
+        if ($tokennormalised === 'children' && $thiscategoryid > 0) {
+            $categoryids = array_merge(
+                $categoryids,
+                local_mycoursesfilter_get_direct_child_category_ids($thiscategoryid)
+            );
+        }
+    }
+
+    $categoryids = local_mycoursesfilter_normalise_category_ids($categoryids);
+    if ($scope === 'recursive') {
+        $categoryids = local_mycoursesfilter_expand_category_ids($categoryids);
+    }
+
+    return $categoryids;
+}
+
+/**
+ * Converts category ids into a stable URL parameter value.
+ *
+ * @param int[] $categoryids The explicit category ids.
+ * @param bool $active Whether the category filter is active.
+ * @return string
+ */
+function local_mycoursesfilter_get_category_param_value(array $categoryids, bool $active): string {
+    if (!$active) {
+        return '';
+    }
+
+    $categoryids = local_mycoursesfilter_normalise_category_ids($categoryids);
+    if (empty($categoryids)) {
+        return '-1';
+    }
+
+    return implode(',', $categoryids);
+}
+
 /**
  * Returns the available filter labels.
  *
@@ -221,18 +542,19 @@ function local_mycoursesfilter_match_name(stdClass $course, string $query): bool
 }
 
 /**
- * Checks whether the course matches the selected category.
+ * Checks whether the course matches the selected categories.
  *
  * @param stdClass $course The course record.
- * @param int $categoryid The selected category id.
+ * @param int[] $categoryids The selected category ids.
+ * @param bool $active Whether the category filter is active.
  * @return bool
  */
-function local_mycoursesfilter_match_category(stdClass $course, int $categoryid): bool {
-    if ($categoryid <= 0) {
+function local_mycoursesfilter_match_category(stdClass $course, array $categoryids, bool $active): bool {
+    if (!$active) {
         return true;
     }
 
-    return (int)($course->category ?? 0) === $categoryid;
+    return in_array((int)($course->category ?? 0), $categoryids, true);
 }
 
 /**
@@ -397,11 +719,11 @@ function local_mycoursesfilter_match_status(stdClass $course, ?array $meta, stri
 /**
  * Builds dropdown item definitions for the toolbar.
  *
- * @param array $options Menu options keyed by parameter value.
+ * @param array<string, string> $options Menu options keyed by parameter value.
  * @param string $paramname Parameter name to write.
  * @param string $currentvalue Current selected value.
- * @param array $baseparams The base URL parameters.
- * @return array
+ * @param array<string, scalar> $baseparams The base URL parameters.
+ * @return array<int, array<string, string|bool>>
  */
 function local_mycoursesfilter_build_dropdown_items(
     array $options,
@@ -429,7 +751,7 @@ function local_mycoursesfilter_build_dropdown_items(
 /**
  * Returns the currently active toolbar label.
  *
- * @param array $options Available option labels.
+ * @param array<string, string> $options Available option labels.
  * @param string $currentvalue The selected value.
  * @param string $default Default value.
  * @return string
@@ -445,8 +767,8 @@ function local_mycoursesfilter_get_active_toolbar_label(array $options, string $
 /**
  * Builds hidden input definitions for the toolbar form.
  *
- * @param array $params Additional parameters to preserve.
- * @return array
+ * @param array<string, scalar> $params Additional parameters to preserve.
+ * @return array<int, array<string, string>>
  */
 function local_mycoursesfilter_build_hidden_inputs(array $params): array {
     $inputs = [];
@@ -468,7 +790,7 @@ function local_mycoursesfilter_build_hidden_inputs(array $params): array {
 /**
  * Builds the reset URL while preserving advanced integration parameters.
  *
- * @param array $params Parameters to preserve.
+ * @param array<string, scalar> $params Parameters to preserve.
  * @return moodle_url
  */
 function local_mycoursesfilter_build_reset_url(array $params): moodle_url {
@@ -515,9 +837,9 @@ function local_mycoursesfilter_get_view_labels(): array {
 /**
  * Exports the filtered courses as template context data.
  *
- * @param array $courses The filtered courses.
- * @param array $meta Metadata keyed by course id.
- * @return array
+ * @param stdClass[] $courses The filtered courses.
+ * @param array<int, array<string, int|bool>> $meta Metadata keyed by course id.
+ * @return array<string, array<int, array<string, string|bool>>>
  */
 function local_mycoursesfilter_export_course_cards_context(array $courses, array $meta = []): array {
     global $DB;

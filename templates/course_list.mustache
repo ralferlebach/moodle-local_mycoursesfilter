@@ -2,6 +2,21 @@
     @template local_mycoursesfilter/course_list
 
     Compact list view aligned with Moodle's my/courses feel.
+
+    Example context (json):
+    {
+        "courses": [
+            {
+                "viewurl": "/course/view.php?id=2",
+                "courseimage": "https://example.invalid/course.png",
+                "fullname": "Biology 101",
+                "coursecategory": "Science",
+                "showcoursecategory": true,
+                "isfavourite": true,
+                "favouritelabel": "Favourites"
+            }
+        ]
+    }
 }}
 <div class="local-mycoursesfilter-list list-group list-group-flush">
     {{#courses}}

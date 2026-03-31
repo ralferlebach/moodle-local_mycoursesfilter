@@ -2,6 +2,25 @@
     @template local_mycoursesfilter/course_grid
 
     Responsive card grid closely aligned with block_myoverview.
+
+    Example context (json):
+    {
+        "courses": [
+            {
+                "viewurl": "/course/view.php?id=2",
+                "courseimage": "https://example.invalid/course.png",
+                "fullname": "Biology 101",
+                "shortname": "BIO101",
+                "showshortname": true,
+                "coursecategory": "Science",
+                "showcoursecategory": true,
+                "summaryhtml": "<p>Course summary</p>",
+                "hassummary": true,
+                "isfavourite": false,
+                "favouritelabel": "Favourites"
+            }
+        ]
+    }
 }}
 <div class="local-mycoursesfilter-grid card-grid row row-cols-1 row-cols-sm-2 row-cols-md-3 mx-0">
     {{#courses}}

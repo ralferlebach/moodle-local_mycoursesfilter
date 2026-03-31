@@ -2,6 +2,23 @@
     @template local_mycoursesfilter/course_summary_list
 
     Compact summary view aligned with Moodle's my/courses feel.
+
+    Example context (json):
+    {
+        "courses": [
+            {
+                "viewurl": "/course/view.php?id=2",
+                "courseimage": "https://example.invalid/course.png",
+                "fullname": "Biology 101",
+                "coursecategory": "Science",
+                "showcoursecategory": true,
+                "summaryhtml": "<p>Course summary</p>",
+                "hassummary": true,
+                "isfavourite": false,
+                "favouritelabel": "Favourites"
+            }
+        ]
+    }
 }}
 <div class="local-mycoursesfilter-summary list-group list-group-flush">
     {{#courses}}

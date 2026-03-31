@@ -39,13 +39,23 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page.
      *
-     * @When /^I am on the local my courses filter page(?: with query "(?P<query_string>(?:[^"\]|\.)*)")?$/
-     * @param string|null $query The optional course search query.
+     * @When /^I am on the local my courses filter page$/
      * @return void
      */
-    public function i_am_on_the_local_my_courses_filter_page(?string $query = ''): void {
+    public function i_am_on_the_local_my_courses_filter_page(): void {
+        $this->visit_filter_page([]);
+    }
+
+    /**
+     * Opens the local my courses filter page with a query.
+     *
+     * @When /^I am on the local my courses filter page with query "([^"]*)"$/
+     * @param string $query The optional course search query.
+     * @return void
+     */
+    public function i_am_on_the_local_my_courses_filter_page_with_query(string $query): void {
         $params = [];
-        if ($query !== null && $query !== '') {
+        if ($query !== '') {
             $params['q'] = $query;
         }
 
@@ -55,7 +65,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page with a return URL.
      *
-     * @When /^I am on the local my courses filter page with return URL "(?P<returnurl_string>(?:[^"\]|\.)*)"$/
+     * @When /^I am on the local my courses filter page with return URL "([^"]*)"$/
      * @param string $returnurl The return URL.
      * @return void
      */
@@ -81,8 +91,6 @@ class behat_mycoursesfilter extends behat_base {
         ]);
     }
 
-
-
     /**
      * Opens the local my courses filter page with arbitrary parameters.
      *
@@ -105,7 +113,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Visits the filter page with the supplied parameters.
      *
-     * @param array $params The URL parameters.
+     * @param array<string, string> $params The URL parameters.
      * @return void
      */
     protected function visit_filter_page(array $params): void {

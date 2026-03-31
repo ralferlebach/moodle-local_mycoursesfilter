@@ -22,7 +22,11 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['categoryscope_only'] = 'Nur ausgewählte Kategorien';
+$string['categoryscope_recursive'] = 'Ausgewählte Kategorien einschließlich Unterkategorien';
 $string['courseoverview'] = 'Kursübersicht';
+$string['defaultcategoryscope'] = 'Standard für Kategorieumfang';
+$string['defaultcategoryscope_desc'] = 'Legt fest, ob catid-Werte standardmäßig Unterkategorien einschließen.';
 $string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
 $string['filter_all'] = 'Alle';
 $string['filter_completed'] = 'Abgeschlossen';
