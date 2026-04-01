@@ -25,6 +25,8 @@
 
 require_once(__DIR__ . '/../../../../lib/behat/behat_base.php');
 
+use Behat\Gherkin\Node\TableNode;
+
 /**
  * Behat steps for local_mycoursesfilter.
  *
@@ -37,14 +39,14 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page.
      *
-     * @When /^I am on the local my courses filter page(?: with query "(?P<query_string>(?:[^"\]|\.)*)")?$/
+     * @When /^I am on the local my courses filter page(?: with query "([^"]*)")?$/
      * @param string|null $query The optional course search query.
      * @return void
      */
     public function i_am_on_the_local_my_courses_filter_page(?string $query = ''): void {
         $params = [];
         if ($query !== null && $query !== '') {
-            $params['q'] = $query;
+            $params['coursename'] = $query;
         }
 
         $this->visit_filter_page($params);
@@ -53,7 +55,7 @@ class behat_mycoursesfilter extends behat_base {
     /**
      * Opens the local my courses filter page with a return URL.
      *
-     * @When /^I am on the local my courses filter page with return URL "(?P<returnurl_string>(?:[^"\]|\.)*)"$/
+     * @When /^I am on the local my courses filter page with return URL "([^"]*)"$/
      * @param string $returnurl The return URL.
      * @return void
      */
@@ -62,27 +64,28 @@ class behat_mycoursesfilter extends behat_base {
     }
 
     /**
-     * Opens the local my courses filter page with query and return URL.
+     * Opens the local my courses filter page with arbitrary parameters.
      *
-     * @When /^I am on the local my courses filter page with query "(?P<query_string>(?:[^"\]|\.)*)" and return URL "(?P<returnurl_string>(?:[^"\]|\.)*)"$/
-     * @param string $query The course search query.
-     * @param string $returnurl The return URL.
+     * @When /^I am on the local my courses filter page with the following parameters:$/
+     * @param TableNode $table The parameter table.
      * @return void
      */
-    public function i_am_on_the_local_my_courses_filter_page_with_query_and_return_url(
-        string $query,
-        string $returnurl
-    ): void {
-        $this->visit_filter_page([
-            'q' => $query,
-            'returnurl' => $returnurl,
-        ]);
+    public function i_am_on_the_local_my_courses_filter_page_with_the_following_parameters(TableNode $table): void {
+        $params = [];
+        foreach ($table->getHash() as $row) {
+            if (!isset($row['name']) || !isset($row['value'])) {
+                throw new coding_exception('The parameter table must contain name and value columns.');
+            }
+            $params[$row['name']] = $row['value'];
+        }
+
+        $this->visit_filter_page($params);
     }
 
     /**
      * Visits the filter page with the supplied parameters.
      *
-     * @param array<string, string> $params The URL parameters.
+     * @param array $params The URL parameters.
      * @return void
      */
     protected function visit_filter_page(array $params): void {

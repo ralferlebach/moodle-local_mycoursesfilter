@@ -15,17 +15,30 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Version information for local_mycoursesfilter.
+ * Privacy provider for local_mycoursesfilter.
  *
  * @package    local_mycoursesfilter
+ * @category   privacy
  * @copyright  2026 Ralf Erlebach <moodle-dev@ralferlebach.de>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace local_mycoursesfilter\privacy;
 
-$plugin->component = 'local_mycoursesfilter';
-$plugin->version   = 2026040101;
-$plugin->requires  = 2022041900; // Moodle 4.0+.
-$plugin->release   = '1.0.0';
-$plugin->maturity  = MATURITY_STABLE;
+/**
+ * Privacy provider for local_mycoursesfilter.
+ *
+ * This plugin stores no personal data of its own. When toolbar persistence is
+ * configured to reuse Moodle core preferences, those preferences are owned and
+ * documented by block_myoverview, not by this plugin.
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Returns the component-level privacy metadata reason string.
+     *
+     * @return string
+     */
+    public static function get_reason(): string {
+        return 'privacy:metadata';
+    }
+}

@@ -28,53 +28,85 @@ require_once(__DIR__ . '/lib.php');
 
 require_login();
 
-$q = optional_param('q', '', PARAM_TEXT);
+$systemcontext = context_system::instance();
+require_capability('local/mycoursesfilter:view', $systemcontext);
+
+$coursename = optional_param('coursename', '', PARAM_TEXT);
 $tag = optional_param('tag', '', PARAM_TEXT);
-$catid = optional_param('catid', 0, PARAM_INT);
-$field = optional_param('field', '', PARAM_ALPHANUMEXT);
-$fvalue = optional_param('value', '', PARAM_TEXT);
-$returnurl = optional_param('returnurl', '', PARAM_LOCALURL);
+$rawcatid = optional_param('catid', '', PARAM_RAW_TRIMMED);
+$rawcustomfield = optional_param('customfield', '', PARAM_RAW_TRIMMED);
+$rawreturnurl = optional_param('returnurl', '', PARAM_RAW_TRIMMED);
+$titleoverride = optional_param('title', '', PARAM_TEXT);
+$explicitcourseid = optional_param('courseid', 0, PARAM_INT);
+$only = optional_param('only', 0, PARAM_BOOL) === 1;
+$recursive = optional_param('recursive', 0, PARAM_BOOL) === 1;
 
-$status = optional_param('status', 'any', PARAM_ALPHA);
-$sort = optional_param('sort', 'lastaccess', PARAM_ALPHA);
-$dir = optional_param('dir', 'desc', PARAM_ALPHA);
+$customfield = local_mycoursesfilter_parse_customfield_param($rawcustomfield);
 
-$statusallowed = ['any', 'notstarted', 'inprogress', 'completed'];
-$sortallowed = ['lastaccess', 'alpha', 'shortname', 'lastenrolled'];
-$dirallowed = ['asc', 'desc'];
+$returnurl = local_mycoursesfilter_resolve_return_url($rawreturnurl);
+$sourcecourseid = local_mycoursesfilter_resolve_source_course_id($explicitcourseid);
+$categoryscope = local_mycoursesfilter_resolve_category_scope($only, $recursive);
+$resolvedcategoryids = local_mycoursesfilter_resolve_category_ids($rawcatid, $categoryscope, $sourcecourseid);
+$normalisedcatid = local_mycoursesfilter_normalise_category_ids_param($resolvedcategoryids);
+$normalisedcustomfield = local_mycoursesfilter_build_customfield_param(
+    $customfield['shortname'],
+    $customfield['value']
+);
+$pagetitle = local_mycoursesfilter_resolve_page_title($titleoverride);
 
-if (!in_array($status, $statusallowed, true)) {
-    $status = 'any';
-}
-if (!in_array($sort, $sortallowed, true)) {
-    $sort = 'lastaccess';
-}
-if (!in_array($dir, $dirallowed, true)) {
-    $dir = 'desc';
-}
+$filterlabels = local_mycoursesfilter_get_filter_labels();
+$sortlabels = local_mycoursesfilter_get_sort_labels();
+$viewlabels = local_mycoursesfilter_get_view_labels();
 
-local_mycoursesfilter_require_any_course_role(['student']);
+$filterallowed = array_keys($filterlabels);
+$sortallowed = array_keys($sortlabels);
+$sortorderallowed = ['asc', 'desc'];
+$viewallowed = array_keys($viewlabels);
+
+$filter = local_mycoursesfilter_resolve_toolbar_preference('filter', 'all', PARAM_ALPHA, $filterallowed);
+$sort = local_mycoursesfilter_resolve_toolbar_preference('sort', 'lastaccess', PARAM_ALPHA, $sortallowed);
+$rawsortorder = optional_param('sortorder', '', PARAM_ALPHA);
+$sortorder = in_array($rawsortorder, $sortorderallowed, true)
+    ? $rawsortorder
+    : local_mycoursesfilter_get_default_sortorder($sort);
+$view = local_mycoursesfilter_resolve_toolbar_preference('view', 'card', PARAM_ALPHA, $viewallowed);
 
 $pageparams = [
-    'q' => $q,
+    'coursename' => $coursename,
     'tag' => $tag,
-    'catid' => $catid,
-    'field' => $field,
-    'value' => $fvalue,
-    'status' => $status,
+    'catid' => $normalisedcatid,
+    'customfield' => $normalisedcustomfield,
+    'filter' => $filter,
     'sort' => $sort,
-    'dir' => $dir,
+    'sortorder' => $sortorder,
+    'view' => $view,
+    'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
 ];
 if ($returnurl !== '') {
     $pageparams['returnurl'] = $returnurl;
 }
+if ($explicitcourseid > 0) {
+    $pageparams['courseid'] = $explicitcourseid;
+}
+if ($only) {
+    $pageparams['only'] = 1;
+}
+if ($recursive) {
+    $pageparams['recursive'] = 1;
+}
 
-$pageurl = new moodle_url('/local/mycoursesfilter/index.php', $pageparams);
+$pageurl = new moodle_url('/local/mycoursesfilter/index.php', array_filter($pageparams, static function ($item): bool {
+    return $item !== '' && $item !== 0;
+}));
 
 $PAGE->set_url($pageurl);
-$PAGE->set_context(context_system::instance());
-$PAGE->set_title(get_string('pagetitle', 'local_mycoursesfilter'));
-$PAGE->set_heading(get_string('pagetitle', 'local_mycoursesfilter'));
+$PAGE->set_context($systemcontext);
+$PAGE->add_body_classes(['limitedwidth', 'page-mycourses']);
+$PAGE->set_pagelayout('mycourses');
+$PAGE->set_pagetype('my-index');
+$PAGE->set_title($pagetitle);
+$PAGE->set_heading($pagetitle);
+$PAGE->requires->css(new moodle_url('/local/mycoursesfilter/styles.css'));
 
 $fields = 'id, fullname, shortname, category, visible, summary, summaryformat, idnumber';
 $courses = enrol_get_my_courses($fields, null, 0);
@@ -83,33 +115,40 @@ $meta = local_mycoursesfilter_get_meta_for_courses($courseids);
 
 $filtered = [];
 foreach ($courses as $course) {
-    if (!local_mycoursesfilter_match_name($course, $q)) {
+    if (!local_mycoursesfilter_match_name($course, $coursename)) {
         continue;
     }
-    if (!local_mycoursesfilter_match_category($course, $catid)) {
+    if (!local_mycoursesfilter_match_categories($course, $resolvedcategoryids)) {
         continue;
     }
     if ($tag !== '' && !local_mycoursesfilter_match_tag((int)$course->id, $tag)) {
         continue;
     }
-    if ($field !== '' && !local_mycoursesfilter_match_customfield((int)$course->id, $field, $fvalue)) {
+    if (
+        $customfield['shortname'] !== ''
+        && !local_mycoursesfilter_match_customfield(
+            (int)$course->id,
+            $customfield['shortname'],
+            $customfield['value']
+        )
+    ) {
         continue;
     }
 
     $cmeta = $meta[$course->id] ?? null;
-    if (!local_mycoursesfilter_match_status($course, $cmeta, $status)) {
+    if (!local_mycoursesfilter_match_filter($cmeta, $filter)) {
         continue;
     }
 
     $filtered[] = $course;
 }
 
-usort($filtered, static function (stdClass $a, stdClass $b) use ($meta, $sort, $dir): int {
+usort($filtered, static function (stdClass $a, stdClass $b) use ($meta, $sort, $sortorder): int {
     $adata = $meta[$a->id] ?? [];
     $bdata = $meta[$b->id] ?? [];
 
     switch ($sort) {
-        case 'alpha':
+        case 'coursename':
             $comparison = strcasecmp($a->fullname ?? '', $b->fullname ?? '');
             break;
         case 'shortname':
@@ -124,27 +163,110 @@ usort($filtered, static function (stdClass $a, stdClass $b) use ($meta, $sort, $
             break;
     }
 
-    if ($dir === 'asc') {
+    if ($comparison === 0) {
+        $comparison = strcasecmp($a->fullname ?? '', $b->fullname ?? '');
+    }
+
+    if ($sortorder === 'asc') {
         return $comparison;
     }
 
     return -$comparison;
 });
 
+$cardscontext = local_mycoursesfilter_export_course_cards_context($filtered, $meta);
+$courseshtml = '';
+if (!empty($filtered)) {
+    if ($view === 'list') {
+        $courseshtml = $OUTPUT->render_from_template('local_mycoursesfilter/course_list', $cardscontext);
+    } else if ($view === 'summary') {
+        $courseshtml = $OUTPUT->render_from_template('local_mycoursesfilter/course_summary_list', $cardscontext);
+    } else {
+        $courseshtml = $OUTPUT->render_from_template('local_mycoursesfilter/course_grid', $cardscontext);
+    }
+}
+
+$toolbarparams = [
+    'coursename' => $coursename,
+    'tag' => $tag,
+    'catid' => $normalisedcatid,
+    'customfield' => $normalisedcustomfield,
+    'filter' => $filter,
+    'sort' => $sort,
+    'sortorder' => $sortorder,
+    'view' => $view,
+    'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
+    'returnurl' => $returnurl,
+];
+if ($explicitcourseid > 0) {
+    $toolbarparams['courseid'] = $explicitcourseid;
+}
+if ($only) {
+    $toolbarparams['only'] = 1;
+}
+if ($recursive) {
+    $toolbarparams['recursive'] = 1;
+}
+
+$sortingparams = $toolbarparams;
+unset($sortingparams['sortorder']);
+
 $templatecontext = [
+    'pageheading' => $pagetitle,
     'showbackbutton' => $returnurl !== '',
     'backurl' => $returnurl,
     'backlabel' => get_string('back'),
-    'heading' => get_string('filteredcourses', 'local_mycoursesfilter', count($filtered)),
+    'sectiontitle' => get_string('courseoverview', 'local_mycoursesfilter'),
+    'toolbararialabel' => get_string('toolbararia', 'local_mycoursesfilter'),
     'hascourses' => !empty($filtered),
     'nocoursefound' => get_string('nocoursefound', 'local_mycoursesfilter'),
-    'cardshtml' => '',
+    'courseshtml' => $courseshtml,
+    'groupingbuttonlabel' => local_mycoursesfilter_get_active_toolbar_label($filterlabels, $filter, 'all'),
+    'groupingitems' => local_mycoursesfilter_build_dropdown_items(
+        $filterlabels,
+        'filter',
+        $filter,
+        $toolbarparams
+    ),
+    'groupingarialabel' => get_string('groupingarialabel', 'local_mycoursesfilter'),
+    'searchformurl' => (new moodle_url('/local/mycoursesfilter/index.php'))->out(false),
+    'searchhiddeninputs' => local_mycoursesfilter_build_hidden_inputs([
+        'tag' => $tag,
+        'catid' => $normalisedcatid,
+        'customfield' => $normalisedcustomfield,
+        'filter' => $filter,
+        'sort' => $sort,
+        'sortorder' => $sortorder,
+        'view' => $view,
+        'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
+        'returnurl' => $returnurl,
+        'courseid' => $explicitcourseid,
+        'only' => $only ? 1 : 0,
+        'recursive' => $recursive ? 1 : 0,
+    ]),
+    'searchinputlabel' => get_string('searchbyname', 'local_mycoursesfilter'),
+    'searchplaceholder' => get_string('search'),
+    'searchquery' => $coursename,
+    'sortingbuttonlabel' => local_mycoursesfilter_get_active_toolbar_label($sortlabels, $sort, 'lastaccess'),
+    'sortingitems' => local_mycoursesfilter_build_dropdown_items(
+        $sortlabels,
+        'sort',
+        $sort,
+        $sortingparams
+    ),
+    'sortingarialabel' => get_string('sortingarialabel', 'local_mycoursesfilter'),
+    'displaybuttonlabel' => local_mycoursesfilter_get_active_toolbar_label($viewlabels, $view, 'card'),
+    'displayitems' => local_mycoursesfilter_build_dropdown_items(
+        $viewlabels,
+        'view',
+        $view,
+        $toolbarparams
+    ),
+    'displayarialabel' => get_string('displayarialabel', 'local_mycoursesfilter'),
+    'currentview' => $view,
+    'currentfilter' => $filter,
+    'currentsort' => $sort,
 ];
-
-if (!empty($filtered)) {
-    $cardscontext = local_mycoursesfilter_export_course_cards_context($filtered);
-    $templatecontext['cardshtml'] = $OUTPUT->render_from_template('core_course/view-cards', $cardscontext);
-}
 
 echo $OUTPUT->header();
 echo $OUTPUT->render_from_template('local_mycoursesfilter/page', $templatecontext);

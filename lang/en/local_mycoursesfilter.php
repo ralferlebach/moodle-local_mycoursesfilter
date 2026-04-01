@@ -22,7 +22,39 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['filteredcourses'] = 'Filtered courses: {$a}';
+$string['allowtitleoverride'] = 'Allow title override from URL';
+$string['allowtitleoverride_desc'] = 'Allows the URL title parameter to override the default page title.';
+$string['categoryscope'] = 'Default category scope';
+$string['categoryscope_desc'] = 'Controls whether selected categories include all subcategories by default.';
+$string['categoryscope_only'] = 'Only selected categories';
+$string['categoryscope_recursive'] = 'Selected categories and subcategories';
+$string['courseoverview'] = 'Course overview';
+$string['defaulttitle'] = 'Default page title';
+$string['defaulttitle_desc'] = 'Optional default title for the filtered page. Leave empty to use the language string.';
+$string['displayarialabel'] = 'Dropdown menu for the display';
+$string['filter_all'] = 'All';
+$string['filter_completed'] = 'Completed';
+$string['filter_favourites'] = 'Favourites';
+$string['filter_hidden'] = 'Removed from view';
+$string['filter_inprogress'] = 'In progress';
+$string['filter_notstarted'] = 'Not started';
+$string['groupingarialabel'] = 'Dropdown menu for the grouping';
+$string['mycoursesfilter:view'] = 'View the filtered my courses page';
 $string['nocoursefound'] = 'No courses found.';
-$string['pagetitle'] = 'My courses (filtered)';
-$string['pluginname'] = 'My courses filter link';
+$string['pagetitle'] = 'My Courses (filtered)';
+$string['persisttoolbar'] = 'Toolbar persistence';
+$string['persisttoolbar_core'] = 'Reuse core my/courses preferences where compatible';
+$string['persisttoolbar_desc'] = 'Choose whether the page should reuse Moodle core my/courses preferences or keep toolbar state request-only.';
+$string['persisttoolbar_none'] = 'Do not persist toolbar selections';
+$string['pluginname'] = 'MyCoursesFiltered';
+$string['privacy:metadata'] = 'The local my courses filter plugin does not store any personal data of its own.';
+$string['searchbyname'] = 'Search by course name';
+$string['sort_coursename'] = 'Sorted by course name';
+$string['sort_lastaccess'] = 'Sorted by last accessed';
+$string['sort_lastenrolled'] = 'Sorted by latest enrolment';
+$string['sort_shortname'] = 'Sorted by short name';
+$string['sortingarialabel'] = 'Dropdown menu for the sorting';
+$string['toolbararia'] = 'Course overview controls';
+$string['view_card'] = 'Card';
+$string['view_list'] = 'List';
+$string['view_summary'] = 'Description';

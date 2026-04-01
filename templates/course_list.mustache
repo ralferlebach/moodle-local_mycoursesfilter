@@ -1,0 +1,47 @@
+{{!
+    @template local_mycoursesfilter/course_list
+
+    Compact list view aligned with Moodle's my/courses feel.
+
+    Example context (json):
+    {
+        "courses": [
+            {
+                "viewurl": "/course/view.php?id=2",
+                "courseimage": "https://example.invalid/course.jpg",
+                "fullname": "Biology 101",
+                "showcoursecategory": true,
+                "coursecategory": "Science",
+                "isfavourite": true,
+                "favouritelabel": "Favourites"
+            }
+        ]
+    }
+}}
+<div class="local-mycoursesfilter-list list-group list-group-flush">
+    {{#courses}}
+        <div class="list-group-item local-mycoursesfilter-listitem px-0 py-2 border-left-0 border-right-0 border-start-0 border-end-0 rounded-0">
+            <div class="d-flex align-items-start local-mycoursesfilter-listrow">
+                <div class="local-mycoursesfilter-thumbwrap me-3 mr-3 mb-2 mb-md-0">
+                    <a href="{{viewurl}}" class="d-block">
+                        <img class="local-mycoursesfilter-thumb rounded" src="{{courseimage}}" alt="{{fullname}}">
+                    </a>
+                </div>
+
+                <div class="flex-grow-1 local-mycoursesfilter-flexcontent">
+                    <div class="d-flex align-items-start justify-content-between local-mycoursesfilter-coursehead">
+                        <div class="local-mycoursesfilter-flexcontent">
+                            <h4 class="h6 mb-1 local-mycoursesfilter-coursetitle"><a href="{{viewurl}}">{{{fullname}}}</a></h4>
+                            {{#showcoursecategory}}
+                                <div class="text-muted small local-mycoursesfilter-meta">{{coursecategory}}</div>
+                            {{/showcoursecategory}}
+                        </div>
+                        {{#isfavourite}}
+                            <span class="badge badge-warning bg-warning text-dark text-nowrap">{{favouritelabel}}</span>
+                        {{/isfavourite}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {{/courses}}
+</div>

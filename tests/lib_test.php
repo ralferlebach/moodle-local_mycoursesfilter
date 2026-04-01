@@ -26,7 +26,7 @@
 namespace local_mycoursesfilter;
 
 /**
- * PHPUnit tests for local_mycoursesfilter helper functions.
+ * PHPUnit tests for general helper functions.
  *
  * @package    local_mycoursesfilter
  * @category   test
@@ -65,18 +65,18 @@ final class lib_test extends \advanced_testcase {
     }
 
     /**
-     * Tests category matching.
+     * Tests category matching against multiple category ids.
      *
      * @return void
      */
-    public function test_match_category_checks_exact_category(): void {
+    public function test_match_categories_checks_membership(): void {
         $course = (object)[
             'category' => 12,
         ];
 
-        $this->assertTrue(\local_mycoursesfilter_match_category($course, 0));
-        $this->assertTrue(\local_mycoursesfilter_match_category($course, 12));
-        $this->assertFalse(\local_mycoursesfilter_match_category($course, 99));
+        $this->assertTrue(\local_mycoursesfilter_match_categories($course, []));
+        $this->assertTrue(\local_mycoursesfilter_match_categories($course, [12, 99]));
+        $this->assertFalse(\local_mycoursesfilter_match_categories($course, [99]));
     }
 
     /**
@@ -108,8 +108,6 @@ final class lib_test extends \advanced_testcase {
      * @return void
      */
     public function test_match_status_uses_completion_metadata_when_available(): void {
-        $course = (object)['id' => 42];
-
         $notstartedmeta = [
             'completionenabled' => true,
             'timestarted' => 0,
@@ -135,10 +133,10 @@ final class lib_test extends \advanced_testcase {
             'iscompleted' => true,
         ];
 
-        $this->assertTrue(\local_mycoursesfilter_match_status($course, $notstartedmeta, 'notstarted'));
-        $this->assertTrue(\local_mycoursesfilter_match_status($course, $inprogressmeta, 'inprogress'));
-        $this->assertTrue(\local_mycoursesfilter_match_status($course, $completedmeta, 'completed'));
-        $this->assertFalse(\local_mycoursesfilter_match_status($course, $completedmeta, 'inprogress'));
+        $this->assertTrue(\local_mycoursesfilter_match_status($notstartedmeta, 'notstarted'));
+        $this->assertTrue(\local_mycoursesfilter_match_status($inprogressmeta, 'inprogress'));
+        $this->assertTrue(\local_mycoursesfilter_match_status($completedmeta, 'completed'));
+        $this->assertFalse(\local_mycoursesfilter_match_status($completedmeta, 'inprogress'));
     }
 
     /**
@@ -147,8 +145,6 @@ final class lib_test extends \advanced_testcase {
      * @return void
      */
     public function test_match_status_falls_back_to_last_access(): void {
-        $course = (object)['id' => 42];
-
         $untouchedmeta = [
             'completionenabled' => false,
             'lastaccess' => 0,
@@ -160,8 +156,8 @@ final class lib_test extends \advanced_testcase {
             'iscompleted' => false,
         ];
 
-        $this->assertTrue(\local_mycoursesfilter_match_status($course, $untouchedmeta, 'notstarted'));
-        $this->assertTrue(\local_mycoursesfilter_match_status($course, $visitedmeta, 'inprogress'));
-        $this->assertFalse(\local_mycoursesfilter_match_status($course, $visitedmeta, 'completed'));
+        $this->assertTrue(\local_mycoursesfilter_match_status($untouchedmeta, 'notstarted'));
+        $this->assertTrue(\local_mycoursesfilter_match_status($visitedmeta, 'inprogress'));
+        $this->assertFalse(\local_mycoursesfilter_match_status($visitedmeta, 'completed'));
     }
 }

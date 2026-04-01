@@ -1,0 +1,137 @@
+.local-mycoursesfilter-page {
+    width: 100%;
+}
+
+.local-mycoursesfilter .card-title {
+    word-break: normal;
+}
+
+.local-mycoursesfilter-overview,
+.local-mycoursesfilter-courses-view {
+    overflow-x: hidden;
+}
+
+.local-mycoursesfilter-toolbar-row {
+    width: 100%;
+}
+
+.local-mycoursesfilter-toolbar-item,
+.local-mycoursesfilter-toolbar .dropdown {
+    max-width: 100%;
+}
+
+.local-mycoursesfilter-toolbar-item--grouping,
+.local-mycoursesfilter-toolbar-item--sort,
+.local-mycoursesfilter-toolbar-item--display {
+    flex: 0 0 auto;
+}
+
+.local-mycoursesfilter-toolbar .dropdown-toggle {
+    width: auto;
+    max-width: 100%;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.local-mycoursesfilter-toolbar .dropdown-menu {
+    max-width: 100%;
+}
+
+.local-mycoursesfilter-toolbar-item--search {
+    flex: 1 1 18rem;
+    max-width: 26rem;
+    min-width: 14rem;
+}
+
+.local-mycoursesfilter-toolbar .searchbar,
+.local-mycoursesfilter-toolbar .simplesearchform {
+    width: 100%;
+}
+
+
+.local-mycoursesfilter-toolbar .btn + .btn,
+.local-mycoursesfilter-toolbar .dropdown + .dropdown {
+    margin-left: 0;
+}
+
+.local-mycoursesfilter-flexcontent {
+    min-width: 0;
+}
+
+.local-mycoursesfilter-grid {
+    overflow-x: hidden;
+}
+
+.local-mycoursesfilter-grid .col {
+    min-width: 0;
+}
+
+.local-mycoursesfilter-grid .card,
+.local-mycoursesfilter-grid .dashboard-card {
+    width: 100%;
+}
+
+.local-mycoursesfilter-listitem,
+.local-mycoursesfilter-summaryitem {
+    background: transparent;
+}
+
+.local-mycoursesfilter-listrow,
+.local-mycoursesfilter-summaryrow {
+    gap: 0;
+}
+
+.local-mycoursesfilter-thumbwrap {
+    flex: 0 0 110px;
+    width: 110px;
+}
+
+.local-mycoursesfilter-thumb {
+    display: block;
+    width: 100%;
+    height: 68px;
+    object-fit: cover;
+}
+
+.local-mycoursesfilter-coursehead {
+    min-width: 0;
+}
+
+.local-mycoursesfilter-coursetitle,
+.local-mycoursesfilter-coursetitle a {
+    line-height: 1.3;
+}
+
+.local-mycoursesfilter-coursetitle a {
+    text-decoration: none;
+}
+
+.local-mycoursesfilter-coursetitle a:hover,
+.local-mycoursesfilter-coursetitle a:focus {
+    text-decoration: underline;
+}
+
+.local-mycoursesfilter-summarytext {
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+@media (max-width: 767.98px) {
+    .local-mycoursesfilter-toolbar-item--search {
+        order: 10;
+        max-width: none;
+        min-width: 100%;
+    }
+
+    .local-mycoursesfilter-thumbwrap {
+        flex-basis: 84px;
+        width: 84px;
+    }
+
+    .local-mycoursesfilter-thumb {
+        height: 56px;
+    }
+}

@@ -22,7 +22,39 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['filteredcourses'] = 'Gefilterte Kurse: {$a}';
+$string['allowtitleoverride'] = 'Titelüberschreibung per URL erlauben';
+$string['allowtitleoverride_desc'] = 'Erlaubt es, den Standardtitel per URL-Parameter title zu überschreiben.';
+$string['categoryscope'] = 'Standardbereich für Kategorien';
+$string['categoryscope_desc'] = 'Legt fest, ob ausgewählte Kategorien standardmäßig alle Unterkategorien einschließen.';
+$string['categoryscope_only'] = 'Nur ausgewählte Kategorien';
+$string['categoryscope_recursive'] = 'Ausgewählte Kategorien und Unterkategorien';
+$string['courseoverview'] = 'Kursübersicht';
+$string['defaulttitle'] = 'Standardtitel der Seite';
+$string['defaulttitle_desc'] = 'Optionaler Standardtitel für die gefilterte Seite. Leer lassen, um den Sprachstring zu verwenden.';
+$string['displayarialabel'] = 'Dropdown-Menü für die Anzeige';
+$string['filter_all'] = 'Alle';
+$string['filter_completed'] = 'Abgeschlossen';
+$string['filter_favourites'] = 'Favoriten';
+$string['filter_hidden'] = 'Aus Ansicht entfernte';
+$string['filter_inprogress'] = 'In Bearbeitung';
+$string['filter_notstarted'] = 'Noch nicht begonnen';
+$string['groupingarialabel'] = 'Dropdown-Menü für die Gruppierung';
+$string['mycoursesfilter:view'] = 'Die gefilterte Meine-Kurse-Seite anzeigen';
 $string['nocoursefound'] = 'Keine Kurse gefunden.';
 $string['pagetitle'] = 'Meine Kurse (gefiltert)';
-$string['pluginname'] = 'Meine Kurse – Filterlink';
+$string['persisttoolbar'] = 'Persistenz der Werkzeugleiste';
+$string['persisttoolbar_core'] = 'Kompatible Core-Preferences aus Meine Kurse wiederverwenden';
+$string['persisttoolbar_desc'] = 'Legt fest, ob die Seite kompatible Core-Preferences aus Meine Kurse wiederverwendet oder die Werkzeugleiste rein requestbasiert bleibt.';
+$string['persisttoolbar_none'] = 'Auswahlen der Werkzeugleiste nicht persistieren';
+$string['pluginname'] = 'Meine Kurse Gefiltert';
+$string['privacy:metadata'] = 'Das Plugin local_mycoursesfilter speichert keine eigenen personenbezogenen Daten.';
+$string['searchbyname'] = 'Kurse suchen';
+$string['sort_coursename'] = 'Sortiert nach Kursname';
+$string['sort_lastaccess'] = 'Sortiert nach letztem Zugriff';
+$string['sort_lastenrolled'] = 'Sortiert nach letzter Einschreibung';
+$string['sort_shortname'] = 'Sortiert nach Kurzname';
+$string['sortingarialabel'] = 'Dropdown-Menü für die Sortierung';
+$string['toolbararia'] = 'Steuerungen der Kursübersicht';
+$string['view_card'] = 'Kachel';
+$string['view_list'] = 'Liste';
+$string['view_summary'] = 'Beschreibung';
