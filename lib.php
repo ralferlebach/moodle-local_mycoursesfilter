@@ -131,14 +131,14 @@ function local_mycoursesfilter_map_toolbar_value_from_core(string $name, string 
  *
  * @param string $name The request parameter name.
  * @param string $default The default value.
- * @param int $paramtype The Moodle PARAM_* type.
+ * @param string $paramtype The Moodle PARAM_* type constant (e.g. PARAM_ALPHA).
  * @param string[] $allowed Allowed values.
  * @return string
  */
 function local_mycoursesfilter_resolve_toolbar_preference(
     string $name,
     string $default,
-    int $paramtype,
+    string $paramtype,
     array $allowed
 ): string {
     global $USER;

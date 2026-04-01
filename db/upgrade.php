@@ -27,11 +27,10 @@
  *
  * No plugin-specific upgrade steps are currently required.
  *
- * @param int $_oldversion The version being upgraded from.
+ * @param int $oldversion The version being upgraded from.
  * @return bool
  */
-function xmldb_local_mycoursesfilter_upgrade(int $_oldversion): bool {
-    unset($_oldversion);
-
+function xmldb_local_mycoursesfilter_upgrade(int $oldversion): bool {
+    // No upgrade steps required yet; the parameter is intentionally unused.
     return true;
 }
