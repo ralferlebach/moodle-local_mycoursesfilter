@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_mycoursesfilter';
-$plugin->version   = 2026033104;
+$plugin->version   = 2026040101;
 $plugin->requires  = 2022041900; // Moodle 4.0+.
-$plugin->release   = '0.5.2-beta';
-$plugin->maturity  = MATURITY_BETA;
+$plugin->release   = '1.0.0';
+$plugin->maturity  = MATURITY_STABLE;

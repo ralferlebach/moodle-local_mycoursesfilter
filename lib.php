@@ -992,7 +992,6 @@ function local_mycoursesfilter_match_customfield(int $courseid, string $fieldsho
 /**
  * Checks whether the course matches the selected filter bucket.
  *
- *
  * @param array|null $meta The metadata for the course.
  * @param string $filter The selected filter.
  * @return bool
