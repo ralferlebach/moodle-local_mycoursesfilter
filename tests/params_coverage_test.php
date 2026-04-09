@@ -81,10 +81,6 @@ final class params_coverage_test extends \advanced_testcase {
         parent::tearDown();
     }
 
-    // ---------------------------------------------------------------------
-    // filter (all / favourites / hidden)
-    // ---------------------------------------------------------------------
-
     /**
      * The "all" filter accepts any non-hidden course.
      *
@@ -148,10 +144,6 @@ final class params_coverage_test extends \advanced_testcase {
         $this->assertFalse(\local_mycoursesfilter_match_filter($meta, 'completed'));
     }
 
-    // ---------------------------------------------------------------------
-    // customfield (match_customfield against real fields)
-    // ---------------------------------------------------------------------
-
     /**
      * Custom field matching supports exact, partial, empty-value, and mismatch cases.
      *
@@ -198,10 +190,6 @@ final class params_coverage_test extends \advanced_testcase {
         $this->assertTrue(\local_mycoursesfilter_match_customfield($course->id, '', 'anything'));
     }
 
-    // ---------------------------------------------------------------------
-    // sort / sortorder
-    // ---------------------------------------------------------------------
-
     /**
      * The default sort order is ascending for alphabetical sorts and descending otherwise.
      *
@@ -232,10 +220,6 @@ final class params_coverage_test extends \advanced_testcase {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // view
-    // ---------------------------------------------------------------------
-
     /**
      * View label helper exposes exactly the documented keys.
      *
@@ -248,10 +232,6 @@ final class params_coverage_test extends \advanced_testcase {
             $this->assertNotSame('', trim((string)$label));
         }
     }
-
-    // ---------------------------------------------------------------------
-    // filter labels
-    // ---------------------------------------------------------------------
 
     /**
      * Filter label helper exposes exactly the documented keys.
@@ -268,10 +248,6 @@ final class params_coverage_test extends \advanced_testcase {
             $this->assertNotSame('', trim((string)$label));
         }
     }
-
-    // ---------------------------------------------------------------------
-    // returnurl edge cases
-    // ---------------------------------------------------------------------
 
     /**
      * Return URL resolution rejects dangerous inputs and accepts empty strings.
@@ -315,10 +291,6 @@ final class params_coverage_test extends \advanced_testcase {
         $_SERVER['HTTP_REFERER'] = 'https://evil.example/course/view.php?id=17';
         $this->assertSame('', \local_mycoursesfilter_resolve_return_url('this'));
     }
-
-    // ---------------------------------------------------------------------
-    // Toolbar value mapping edge cases (view parameter via persistence layer).
-    // ---------------------------------------------------------------------
 
     /**
      * View values round-trip through the core preference mapping.

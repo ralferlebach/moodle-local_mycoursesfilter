@@ -82,10 +82,6 @@ final class source_context_resolution_test extends \advanced_testcase {
         parent::tearDown();
     }
 
-    // ---------------------------------------------------------------------
-    // Dispatcher (pure path + params, no superglobal or DB manipulation).
-    // ---------------------------------------------------------------------
-
     /**
      * The /course/view.php path maps id to courseid.
      *
@@ -152,10 +148,6 @@ final class source_context_resolution_test extends \advanced_testcase {
         );
     }
 
-    // ---------------------------------------------------------------------
-    // section.php (DB round-trip).
-    // ---------------------------------------------------------------------
-
     /**
      * /course/section.php?id=SECTIONID resolves the owning course.
      *
@@ -193,10 +185,6 @@ final class source_context_resolution_test extends \advanced_testcase {
         $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/section.php?id=999999999';
         $this->assertSame(0, \local_mycoursesfilter_resolve_source_course_id());
     }
-
-    // ---------------------------------------------------------------------
-    // mod/<modname>/view.php — cmid and instance-id fallback.
-    // ---------------------------------------------------------------------
 
     /**
      * /mod/page/view.php?id=CMID resolves the course via course_modules.
@@ -291,10 +279,6 @@ final class source_context_resolution_test extends \advanced_testcase {
         );
     }
 
-    // ---------------------------------------------------------------------
-    // Access control guard.
-    // ---------------------------------------------------------------------
-
     /**
      * A user without access to the referenced course receives no source course id.
      *
@@ -350,10 +334,6 @@ final class source_context_resolution_test extends \advanced_testcase {
 
         $this->assertSame(0, \local_mycoursesfilter_resolve_source_course_id(999999999));
     }
-
-    // ---------------------------------------------------------------------
-    // Helper functions.
-    // ---------------------------------------------------------------------
 
     /**
      * The cmid helper returns 0 for unknown/invalid ids and the course id otherwise.

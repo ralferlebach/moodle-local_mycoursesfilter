@@ -404,27 +404,6 @@ function local_mycoursesfilter_normalise_explicit_local_url(string $rawurl): str
 /**
  * Resolves the source course id for contextual category shortcuts.
  *
- * Supports several referer URL shapes and always enforces an access check
- * against the current user before returning a course id:
- *
- *  - Explicit `courseid` URL parameter on the filter page itself.
- *  - `/course/view.php?id=COURSEID`.
- *  - `/course/section.php?id=SECTIONID` (course resolved via section record).
- *  - `/mod/<modname>/...` with a `cmid` parameter, or with an `id` parameter
- *    that is first tried as a course module id and then as an instance id of
- *    the activity module (`mdl_<modname>.id`).
- *  - Any same-site URL exposing a numeric `courseid` query parameter.
- *  - `/user/profile.php?course=COURSEID`.
- *
- * A resolved course id is returned only when the current user can access the
- * matching course via {@see can_access_course()}.
- *
- * @param int $explicitcourseid Optional explicit course id from the URL.
- * @return int
- */
-/**
- * Resolves the source course id for contextual category shortcuts.
- *
  * Precedence, from most explicit to most tolerant:
  *
  *   1. Explicit opt-in `courseid=last`: the current user's most recently
@@ -478,7 +457,7 @@ function local_mycoursesfilter_resolve_source_course_id(
         }
     }
 
-    // returnurl fallback (plugin-supplied local URL).
+    // The returnurl fallback (plugin-supplied local URL).
     if ($returnurlfallback !== '') {
         $conflict = false;
         $candidateid = local_mycoursesfilter_extract_course_id_from_local_url($returnurlfallback, $conflict);
