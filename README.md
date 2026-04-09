@@ -22,10 +22,10 @@ It offers filtering, sorting, and view customization options by url, so you may 
 | Parameter      | Description                                                                 |
 |----------------|-----------------------------------------------------------------------------|
 | `coursename`   | Search for courses by full name or short name (partial match).              |
-| `tag`          | Filter courses by a single tag name (exact match).                          |
 | `catid`        | Restrict to one or more course categories. Accepts a single ID, a comma-separated list, or the contextual tokens `this`, `parent`, and `children` (e.g. `catid=3,7,12`, `catid=this,children`, `catid=parent`). Contextual tokens require an implicit source course context — see the dedicated section below for how that is resolved. |
-| `customfield`  | Filter by a course custom field in the form `shortname:value` (e.g. `customfield=department:science`). |
+| `tag`          | Filter courses by a single tag name (exact match).                          |
 | `filter`       | Filter courses by status: `all`, `notstarted`, `inprogress`, `completed`, `favourites`, `hidden`. |
+| `customfield`  | Filter by a course custom field in the form `shortname:value` (e.g. `customfield=department:science`). |
 | `sort`         | Sort field: `lastaccess`, `coursename`, `shortname`, `lastenrolled`.        |
 | `sortorder`    | Sort direction: `asc` or `desc`. Defaults to a sensible value per `sort` field. |
 | `view`         | Display mode: `card`, `list`, `summary`.                                    |
