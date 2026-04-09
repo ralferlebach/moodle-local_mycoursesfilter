@@ -21,12 +21,19 @@ It offers filtering, sorting, and view customization options by url, so you may 
 
 | Parameter      | Description                                                                 |
 |----------------|-----------------------------------------------------------------------------|
-| `coursename`   | Search for courses by name or short name (partial match).                                |
-| `filter`       | Filter courses (`all`, `notstarted`, `inprogress`, `completed`, `favourites`, `hidden`). |
-| `sort`         | Sort courses (`lastaccess`, `coursename`, `shortname`, `lastenrolled`).    |
-| `view`         | Display mode (`card`, `list`, `summary`).                                  |
+| `coursename`   | Search for courses by full name or short name (partial match).              |
+| `tag`          | Filter courses by a single tag name (exact match).                          |
+| `catid`        | Restrict to one or more course categories. Accepts a single ID or a comma-separated list (e.g. `catid=3,7,12`). |
+| `customfield`  | Filter by a course custom field in the form `shortname:value` (e.g. `customfield=department:science`). |
+| `courseid`     | Use the given course as the source context (e.g. to derive the category scope). Integer course ID. |
+| `only`         | When set to `1`, limits results to the resolved category only and ignores enrolments outside it. |
+| `recursive`    | When set to `1`, includes courses from child categories of the resolved category. |
+| `filter`       | Filter courses by status: `all`, `notstarted`, `inprogress`, `completed`, `favourites`, `hidden`. |
+| `sort`         | Sort field: `lastaccess`, `coursename`, `shortname`, `lastenrolled`.        |
+| `sortorder`    | Sort direction: `asc` or `desc`. Defaults to a sensible value per `sort` field. |
+| `view`         | Display mode: `card`, `list`, `summary`.                                    |
 | `title`        | Override the page title and heading (requires the title override to be enabled in plugin settings). |
-| `returnurl`    | Optional return URL (e.g., `this` for the referring page).                 |
+| `returnurl`    | Optional return URL. Accepts `this` for the referring page or a local Moodle URL. |
 
 ## Examples
 
