@@ -486,7 +486,7 @@ function local_mycoursesfilter_resolve_source_course_id(
  * @param bool|null $conflict Set by reference to true when an id/cmid conflict is detected.
  * @return int Course id, or 0 when the URL exposes no usable mapping.
  */
-function local_mycoursesfilter_extract_course_id_from_local_url(string $localurl, bool &$conflict = null): int {
+function local_mycoursesfilter_extract_course_id_from_local_url(string $localurl, ?bool &$conflict = null): int {
     $conflict = false;
 
     $localurl = trim($localurl);
@@ -535,7 +535,7 @@ function local_mycoursesfilter_extract_course_id_from_local_url(string $localurl
 function local_mycoursesfilter_resolve_course_id_from_referer_path(
     string $path,
     array $params,
-    bool &$conflict = null
+    ?bool &$conflict = null
 ): int {
     global $DB;
 
