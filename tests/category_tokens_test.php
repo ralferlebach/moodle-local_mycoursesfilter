@@ -62,6 +62,9 @@ final class category_tokens_test extends \advanced_testcase {
     protected function setUp(): void {
         parent::setUp();
         $this->savedreferer = $_SERVER['HTTP_REFERER'] ?? null;
+        // Source course resolution enforces can_access_course(); tests run as admin
+        // so generated courses are always accessible.
+        $this->setAdminUser();
     }
 
     /**

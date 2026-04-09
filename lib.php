@@ -404,12 +404,29 @@ function local_mycoursesfilter_normalise_explicit_local_url(string $rawurl): str
 /**
  * Resolves the source course id for contextual category shortcuts.
  *
+ * Supports several referer URL shapes and always enforces an access check
+ * against the current user before returning a course id:
+ *
+ *  - Explicit `courseid` URL parameter on the filter page itself.
+ *  - `/course/view.php?id=COURSEID`.
+ *  - `/course/section.php?id=SECTIONID` (course resolved via section record).
+ *  - `/mod/<modname>/...` with a `cmid` parameter, or with an `id` parameter
+ *    that is first tried as a course module id and then as an instance id of
+ *    the activity module (`mdl_<modname>.id`).
+ *  - Any same-site URL exposing a numeric `courseid` query parameter.
+ *  - `/user/profile.php?course=COURSEID`.
+ *
+ * A resolved course id is returned only when the current user can access the
+ * matching course via {@see can_access_course()}.
+ *
  * @param int $explicitcourseid Optional explicit course id from the URL.
  * @return int
  */
 function local_mycoursesfilter_resolve_source_course_id(int $explicitcourseid = 0): int {
     if ($explicitcourseid > 0) {
-        return $explicitcourseid;
+        return local_mycoursesfilter_user_can_access_source_course($explicitcourseid)
+            ? $explicitcourseid
+            : 0;
     }
 
     $refererurl = local_mycoursesfilter_get_local_referer_url();
@@ -423,16 +440,153 @@ function local_mycoursesfilter_resolve_source_course_id(int $explicitcourseid = 
     }
 
     $refererpath = local_mycoursesfilter_strip_site_path((string)($refererparts['path'] ?? ''));
-    if ($refererpath !== '/course/view.php') {
+    parse_str((string)$refererparts['query'], $params);
+
+    $resolvedcourseid = local_mycoursesfilter_resolve_course_id_from_referer_path($refererpath, $params);
+    if ($resolvedcourseid <= 0) {
         return 0;
     }
 
-    parse_str($refererparts['query'], $params);
-    if (empty($params['id']) || !ctype_digit((string)$params['id'])) {
+    if (!local_mycoursesfilter_user_can_access_source_course($resolvedcourseid)) {
         return 0;
     }
 
-    return (int)$params['id'];
+    return $resolvedcourseid;
+}
+
+/**
+ * Resolves a course id from a parsed referer path and query parameters.
+ *
+ * Split out from {@see local_mycoursesfilter_resolve_source_course_id()} to
+ * keep the dispatcher testable without manipulating superglobals.
+ *
+ * @param string $path Local referer path (site path already stripped).
+ * @param array $params Parsed query parameters from the referer URL.
+ * @return int Course id, or 0 when no mapping applies.
+ */
+function local_mycoursesfilter_resolve_course_id_from_referer_path(string $path, array $params): int {
+    global $DB;
+
+    // Generic courseid parameter: many Moodle pages expose the course via this name.
+    if (!empty($params['courseid']) && ctype_digit((string)$params['courseid'])) {
+        return (int)$params['courseid'];
+    }
+
+    // Classic entry point: /course/view.php?id=COURSEID.
+    if ($path === '/course/view.php' && !empty($params['id']) && ctype_digit((string)$params['id'])) {
+        return (int)$params['id'];
+    }
+
+    // Moodle 4.4+ standalone section page: /course/section.php?id=SECTIONID.
+    if ($path === '/course/section.php' && !empty($params['id']) && ctype_digit((string)$params['id'])) {
+        $sectionid = (int)$params['id'];
+        $courseid = (int)$DB->get_field('course_sections', 'course', ['id' => $sectionid]);
+        return $courseid > 0 ? $courseid : 0;
+    }
+
+    // Activity modules: /mod/<modname>/... scripts.
+    if (preg_match('#^/mod/([a-z][a-z0-9_]*)/#', $path, $matches)) {
+        $modname = $matches[1];
+
+        // Explicit cmid parameter always wins when present.
+        if (!empty($params['cmid']) && ctype_digit((string)$params['cmid'])) {
+            $courseid = local_mycoursesfilter_course_id_from_cmid((int)$params['cmid']);
+            if ($courseid > 0) {
+                return $courseid;
+            }
+        }
+
+        // Generic id parameter: try as cmid first, then fall back to instance id.
+        if (!empty($params['id']) && ctype_digit((string)$params['id'])) {
+            $idvalue = (int)$params['id'];
+            $courseid = local_mycoursesfilter_course_id_from_cmid($idvalue);
+            if ($courseid > 0) {
+                return $courseid;
+            }
+
+            $courseid = local_mycoursesfilter_course_id_from_mod_instance($modname, $idvalue);
+            if ($courseid > 0) {
+                return $courseid;
+            }
+        }
+    }
+
+    // /user/profile.php?course=COURSEID.
+    if ($path === '/user/profile.php' && !empty($params['course']) && ctype_digit((string)$params['course'])) {
+        return (int)$params['course'];
+    }
+
+    return 0;
+}
+
+/**
+ * Resolves the course id for a course module id.
+ *
+ * @param int $cmid Course module id.
+ * @return int Course id, or 0 when the cmid does not exist.
+ */
+function local_mycoursesfilter_course_id_from_cmid(int $cmid): int {
+    global $DB;
+
+    if ($cmid <= 0) {
+        return 0;
+    }
+
+    return (int)$DB->get_field('course_modules', 'course', ['id' => $cmid]);
+}
+
+/**
+ * Resolves the course id for an activity module instance id.
+ *
+ * @param string $modname Activity module short name (e.g. `forum`).
+ * @param int $instanceid Instance id in the module table.
+ * @return int Course id, or 0 when the instance does not exist.
+ */
+function local_mycoursesfilter_course_id_from_mod_instance(string $modname, int $instanceid): int {
+    global $DB;
+
+    if ($instanceid <= 0) {
+        return 0;
+    }
+
+    if (!preg_match('/^[a-z][a-z0-9_]*$/', $modname)) {
+        return 0;
+    }
+
+    try {
+        if (!$DB->get_manager()->table_exists($modname)) {
+            return 0;
+        }
+    } catch (\Throwable $e) {
+        return 0;
+    }
+
+    return (int)$DB->get_field($modname, 'course', ['id' => $instanceid]);
+}
+
+/**
+ * Checks whether the current user may use the given course as a source context.
+ *
+ * Uses {@see can_access_course()} which mirrors core's own visibility rules
+ * (including guest access, hidden courses, and role overrides).
+ *
+ * @param int $courseid Candidate course id.
+ * @return bool
+ */
+function local_mycoursesfilter_user_can_access_source_course(int $courseid): bool {
+    if ($courseid <= 0) {
+        return false;
+    }
+
+    try {
+        $course = get_course($courseid);
+    } catch (\dml_missing_record_exception $e) {
+        return false;
+    } catch (\Throwable $e) {
+        return false;
+    }
+
+    return can_access_course($course);
 }
 
 /**
