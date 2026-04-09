@@ -23,7 +23,7 @@ It offers filtering, sorting, and view customization options by url, so you may 
 |----------------|-----------------------------------------------------------------------------|
 | `coursename`   | Search for courses by full name or short name (partial match).              |
 | `tag`          | Filter courses by a single tag name (exact match).                          |
-| `catid`        | Restrict to one or more course categories. Accepts a single ID or a comma-separated list (e.g. `catid=3,7,12`). |
+| `catid`        | Restrict to one or more course categories. Accepts a single ID, a comma-separated list, or the contextual tokens `this`, `parent`, and `children` (e.g. `catid=3,7,12`, `catid=this,children`, `catid=parent`). The contextual tokens require a source course context, which is taken from the `courseid` parameter or, if absent, derived from the HTTP referer when it points to `/course/view.php?id=…` on the same site. |
 | `customfield`  | Filter by a course custom field in the form `shortname:value` (e.g. `customfield=department:science`). |
 | `courseid`     | Use the given course as the source context (e.g. to derive the category scope). Integer course ID. |
 | `only`         | When set to `1`, limits results to the resolved category only and ignores enrolments outside it. |
