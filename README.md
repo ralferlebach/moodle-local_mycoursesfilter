@@ -31,7 +31,6 @@ It offers filtering, sorting, and view customization options by url, so you may 
 | `view`         | Display mode: `card`, `list`, `summary`.                                    |
 | `only`         | Specifies the catid-Parameter. When set to `1`, limits results to the resolved category only and ignores any enrolments outside of it. |
 | `recursive`    | Specifies the catid-Parameter. When set to `1`, includes courses from all child categories of the resolved categories. |
-
 | `title`        | Override the page title and heading (requires the title override to be enabled in plugin settings). |
 | `returnurl`    | Optional return URL. Accepts `this` for the referring page or a local Moodle URL. The return URL is also used as a secondary source for implicit source-course resolution when the HTTP referer is unavailable. |
 | `courseid`     | Use the given course as the source context (e.g. to derive the category scope). Accepts an integer course ID or the literal `last`. When set to `last`, the source context is resolved exclusively from the current user's most recently accessed enrolment (via `enrol_get_my_courses()`), bypassing referer and session hints. |
