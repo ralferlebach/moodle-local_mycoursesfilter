@@ -603,7 +603,7 @@ function local_mycoursesfilter_resolve_course_id_from_referer_path(
         }
     }
 
-    // /user/profile.php?course=COURSEID.
+    // Pattern: /user/profile.php?course=COURSEID.
     if ($path === '/user/profile.php' && !empty($params['course']) && ctype_digit((string)$params['course'])) {
         return (int)$params['course'];
     }

@@ -79,10 +79,6 @@ final class tolerant_context_resolution_test extends \advanced_testcase {
         parent::tearDown();
     }
 
-    // ---------------------------------------------------------------------
-    // courseid=last
-    // ---------------------------------------------------------------------
-
     /**
      * The forcelast flag returns the user's most recently accessed enrolment.
      *
@@ -178,10 +174,6 @@ final class tolerant_context_resolution_test extends \advanced_testcase {
             \local_mycoursesfilter_resolve_last_accessed_course_id_for_current_user()
         );
     }
-
-    // ---------------------------------------------------------------------
-    // id/cmid conflict -> last-accessed fallback
-    // ---------------------------------------------------------------------
 
     /**
      * When a mod id parameter matches a cmid in course A and an instance id in course B,
@@ -305,10 +297,6 @@ final class tolerant_context_resolution_test extends \advanced_testcase {
         $this->assertSame((int)$enrolled->id, $resolved);
     }
 
-    // ---------------------------------------------------------------------
-    // returnurl fallback
-    // ---------------------------------------------------------------------
-
     /**
      * When the HTTP referer is empty, the returnurl is used to derive the source course.
      *
@@ -349,10 +337,6 @@ final class tolerant_context_resolution_test extends \advanced_testcase {
         );
         $this->assertSame(0, $resolved);
     }
-
-    // ---------------------------------------------------------------------
-    // Session fallback
-    // ---------------------------------------------------------------------
 
     /**
      * $SESSION->lastcourseaccessed is used when no referer or returnurl is available.
@@ -418,10 +402,6 @@ final class tolerant_context_resolution_test extends \advanced_testcase {
         }
         $this->assertSame(0, \local_mycoursesfilter_resolve_session_course_id());
     }
-
-    // ---------------------------------------------------------------------
-    // Block-instance resolution
-    // ---------------------------------------------------------------------
 
     /**
      * A block instance attached to a course context resolves to that course.
