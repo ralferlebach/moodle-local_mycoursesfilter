@@ -106,7 +106,6 @@ $PAGE->set_pagelayout('mycourses');
 $PAGE->set_pagetype('my-index');
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pagetitle);
-$PAGE->requires->css(new moodle_url('/local/mycoursesfilter/styles.css'));
 
 $fields = 'id, fullname, shortname, category, visible, summary, summaryformat, idnumber';
 $courses = enrol_get_my_courses($fields, null, 0);

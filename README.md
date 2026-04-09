@@ -25,6 +25,7 @@ It offers filtering, sorting, and view customization options by url, so you may 
 | `filter`       | Filter courses (`all`, `notstarted`, `inprogress`, `completed`, `favourites`, `hidden`). |
 | `sort`         | Sort courses (`lastaccess`, `coursename`, `shortname`, `lastenrolled`).    |
 | `view`         | Display mode (`card`, `list`, `summary`).                                  |
+| `title`        | Override the page title and heading (requires the title override to be enabled in plugin settings). |
 | `returnurl`    | Optional return URL (e.g., `this` for the referring page).                 |
 
 ## Examples
