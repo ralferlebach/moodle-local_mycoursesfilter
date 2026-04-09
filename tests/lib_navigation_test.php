@@ -180,10 +180,18 @@ final class lib_navigation_test extends \advanced_testcase {
         global $CFG;
 
         $this->resetAfterTest();
+        $this->setAdminUser();
 
-        $this->assertSame(42, \local_mycoursesfilter_resolve_source_course_id(42));
-        $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/view.php?id=77';
-        $this->assertSame(77, \local_mycoursesfilter_resolve_source_course_id());
+        $generator = $this->getDataGenerator();
+        $explicitcourse = $generator->create_course();
+        $referercourse = $generator->create_course();
+
+        $this->assertSame(
+            (int)$explicitcourse->id,
+            \local_mycoursesfilter_resolve_source_course_id((int)$explicitcourse->id)
+        );
+        $_SERVER['HTTP_REFERER'] = $CFG->wwwroot . '/course/view.php?id=' . (int)$referercourse->id;
+        $this->assertSame((int)$referercourse->id, \local_mycoursesfilter_resolve_source_course_id());
     }
 
     /**

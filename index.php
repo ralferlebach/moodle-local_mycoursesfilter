@@ -37,14 +37,22 @@ $rawcatid = optional_param('catid', '', PARAM_RAW_TRIMMED);
 $rawcustomfield = optional_param('customfield', '', PARAM_RAW_TRIMMED);
 $rawreturnurl = optional_param('returnurl', '', PARAM_RAW_TRIMMED);
 $titleoverride = optional_param('title', '', PARAM_TEXT);
-$explicitcourseid = optional_param('courseid', 0, PARAM_INT);
+$rawcourseid = optional_param('courseid', '', PARAM_RAW_TRIMMED);
+$forcelastcourseid = (core_text::strtolower($rawcourseid) === 'last');
+$explicitcourseid = (!$forcelastcourseid && ctype_digit($rawcourseid)) ? (int)$rawcourseid : 0;
+// Stable encoding of the courseid parameter for URL re-emission.
+$courseidparam = $forcelastcourseid ? 'last' : ($explicitcourseid > 0 ? (string)$explicitcourseid : '');
 $only = optional_param('only', 0, PARAM_BOOL) === 1;
 $recursive = optional_param('recursive', 0, PARAM_BOOL) === 1;
 
 $customfield = local_mycoursesfilter_parse_customfield_param($rawcustomfield);
 
 $returnurl = local_mycoursesfilter_resolve_return_url($rawreturnurl);
-$sourcecourseid = local_mycoursesfilter_resolve_source_course_id($explicitcourseid);
+$sourcecourseid = local_mycoursesfilter_resolve_source_course_id(
+    $explicitcourseid,
+    $forcelastcourseid,
+    $returnurl
+);
 $categoryscope = local_mycoursesfilter_resolve_category_scope($only, $recursive);
 $resolvedcategoryids = local_mycoursesfilter_resolve_category_ids($rawcatid, $categoryscope, $sourcecourseid);
 $normalisedcatid = local_mycoursesfilter_normalise_category_ids_param($resolvedcategoryids);
@@ -85,8 +93,8 @@ $pageparams = [
 if ($returnurl !== '') {
     $pageparams['returnurl'] = $returnurl;
 }
-if ($explicitcourseid > 0) {
-    $pageparams['courseid'] = $explicitcourseid;
+if ($courseidparam !== '') {
+    $pageparams['courseid'] = $courseidparam;
 }
 if ($only) {
     $pageparams['only'] = 1;
@@ -106,7 +114,6 @@ $PAGE->set_pagelayout('mycourses');
 $PAGE->set_pagetype('my-index');
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($pagetitle);
-$PAGE->requires->css(new moodle_url('/local/mycoursesfilter/styles.css'));
 
 $fields = 'id, fullname, shortname, category, visible, summary, summaryformat, idnumber';
 $courses = enrol_get_my_courses($fields, null, 0);
@@ -198,8 +205,8 @@ $toolbarparams = [
     'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
     'returnurl' => $returnurl,
 ];
-if ($explicitcourseid > 0) {
-    $toolbarparams['courseid'] = $explicitcourseid;
+if ($courseidparam !== '') {
+    $toolbarparams['courseid'] = $courseidparam;
 }
 if ($only) {
     $toolbarparams['only'] = 1;
@@ -240,7 +247,7 @@ $templatecontext = [
         'view' => $view,
         'title' => local_mycoursesfilter_is_title_override_enabled() ? $titleoverride : '',
         'returnurl' => $returnurl,
-        'courseid' => $explicitcourseid,
+        'courseid' => $courseidparam,
         'only' => $only ? 1 : 0,
         'recursive' => $recursive ? 1 : 0,
     ]),
